@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profit & Loss - ErpBuddy</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+  <style>
+    .pl-container {
+      max-width: 1200px;
+      margin: 20px auto;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+
+    .pl-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #f0f0f0;
+      padding-bottom: 15px;
+    }
+
+    .pl-header h1 {
+      font-size: 28px;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+    }
+
+    .pl-filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 6px;
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      flex: 1;
+      min-width: 150px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .filter-group label {
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 5px;
+      font-size: 12px;
+    }
+
+    .filter-group input {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .pl-statement {
+      margin-top: 20px;
+    }
+
+    .pl-title {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .pl-title h2 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 2px;
+    }
+
+    .pl-title p {
+      color: #999;
+      font-size: 12px;
+      margin: 0;
+    }
+
+    .pl-section {
+      margin-bottom: 30px;
+      border-left: 4px solid #0066cc;
+    }
+
+    .pl-section-title {
+      background: #f8f9fa;
+      padding: 12px 15px;
+      font-weight: 600;
+      font-size: 14px;
+      color: #333;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .pl-items {
+      background: #fff;
+    }
+
+    .pl-item {
+      display: flex;
+      padding: 10px 15px;
+      border-bottom: 1px solid #eee;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .pl-item:hover {
+      background: #f8f9fa;
+    }
+
+    .pl-item-name {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pl-item-code {
+      font-weight: 600;
+      color: #0066cc;
+      font-family: monospace;
+      font-size: 12px;
+    }
+
+    .pl-item-label {
+      color: #555;
+      font-size: 14px;
+    }
+
+    .pl-item-amount {
+      font-family: monospace;
+      font-weight: 500;
+      text-align: right;
+      min-width: 120px;
+      color: #333;
+    }
+
+    .pl-section-total {
+      display: flex;
+      padding: 12px 15px;
+      background: #f0f0f0;
+      border-bottom: 2px solid #dee2e6;
+      font-weight: 600;
+      font-size: 14px;
+      justify-content: space-between;
+    }
+
+    .pl-section-total-amount {
+      font-family: monospace;
+      text-align: right;
+      color: #0066cc;
+      min-width: 120px;
+    }
+
+    .pl-net-result {
+      display: flex;
+      padding: 15px;
+      background: #e8f5e9;
+      border: 2px solid #4caf50;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 16px;
+      justify-content: space-between;
+      margin-top: 20px;
+      color: #155724;
+    }
+
+    .pl-net-result-amount {
+      font-family: monospace;
+      text-align: right;
+      color: #155724;
+      font-size: 20px;
+    }
+
+    .pl-net-result.loss {
+      background: #ffebee;
+      border-color: #dc3545;
+      color: #721c24;
+    }
+
+    .pl-net-result.loss .pl-net-result-amount {
+      color: #721c24;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+
+    .error-message {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 12px 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      border-left: 4px solid #dc3545;
+    }
+
+    .success-message {
+      background: #d4edda;
+      color: #155724;
+      padding: 12px 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      border-left: 4px solid #28a745;
+    }
+
+    .back-button {
+      color: #0066cc;
+      text-decoration: none;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 20px;
+      cursor: pointer;
+    }
+
+    .back-button:hover {
+      text-decoration: underline;
+    }
+
+    .print-btn,
+    .export-btn {
+      background: #6c757d;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-left: 8px;
+    }
+
+    .print-btn:hover,
+    .export-btn:hover {
+      background: #5a6268;
+    }
+
+    @media print {
+      .pl-filters,
+      .back-button,
+      .print-btn,
+      .export-btn {
+        display: none !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .pl-filters {
+        flex-direction: column;
+      }
+
+      .filter-group {
+        min-width: auto;
+      }
+
+      .pl-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .pl-item-amount {
+        align-self: flex-end;
+        margin-top: 5px;
+      }
+
+      .pl-net-result {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="pl-container">
+    <div class="back-button" onclick="history.back()">← Back</div>
+
+    <div class="pl-header">
+      <div>
+        <h1>📈 Profit & Loss Statement</h1>
+        <small style="color: #999;">Income Statement showing revenues, expenses, and net profit</small>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button class="print-btn" onclick="window.print()">🖨️ Print</button>
+        <button class="export-btn" onclick="exportToCSV()">📥 CSV</button>
+      </div>
+    </div>
+
+    <div id="successMessage" class="success-message" style="display: none;"></div>
+    <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+    <div class="pl-filters">
+      <div class="filter-group">
+        <label>From Date</label>
+        <input type="date" id="fromDate" onchange="applyFilters()">
+      </div>
+      <div class="filter-group">
+        <label>To Date</label>
+        <input type="date" id="toDate" onchange="applyFilters()">
+      </div>
+      <div class="filter-group">
+        <button class="btn btn-secondary" onclick="resetFilters()" style="margin-top: auto;">Reset</button>
+      </div>
+    </div>
+
+    <div id="loadingIndicator" class="loading" style="display: none;">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p>Loading profit & loss statement...</p>
+    </div>
+
+    <div id="statementWrapper">
+      <div class="pl-statement">
+        <div class="pl-title">
+          <h2>Profit & Loss Statement</h2>
+          <p id="periodText"></p>
+        </div>
+
+        <!-- Revenue Section -->
+        <div class="pl-section">
+          <div class="pl-section-title">Revenue / Income</div>
+          <div class="pl-items" id="revenueItems"></div>
+          <div class="pl-section-total">
+            <span>Total Revenue</span>
+            <div class="pl-section-total-amount" id="totalRevenue">0.00</div>
+          </div>
+        </div>
+
+        <!-- Expense Section -->
+        <div class="pl-section">
+          <div class="pl-section-title">Expenses</div>
+          <div class="pl-items" id="expenseItems"></div>
+          <div class="pl-section-total">
+            <span>Total Expenses</span>
+            <div class="pl-section-total-amount" id="totalExpenses">0.00</div>
+          </div>
+        </div>
+
+        <!-- Net Result -->
+        <div class="pl-net-result" id="netResultBox">
+          <span>NET PROFIT</span>
+          <div class="pl-net-result-amount" id="netProfitAmount">0.00</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    let plData = null;
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!isAuthenticated()) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      loadProfitLoss();
+    });
+
+    /**
+     * Load P&L data from API
+     */
+    async function loadProfitLoss() {
+      try {
+        showLoading(true);
+
+        // Build query params
+        const params = new URLSearchParams();
+        const fromDate = document.getElementById('fromDate').value;
+        const toDate = document.getElementById('toDate').value;
+
+        if (fromDate) params.append('fromDate', fromDate);
+        if (toDate) params.append('toDate', toDate);
+
+        const queryString = params.toString() ? `?${params.toString()}` : '';
+        const response = await apiRequest('GET', `/finance/reports/profit-loss${queryString}`);
+
+        if (!response.data) {
+          throw new Error('No P&L data available');
+        }
+
+        plData = response.data;
+        renderProfitLoss(response.data);
+        showSuccess('Profit & Loss statement loaded successfully');
+      } catch (error) {
+        showError(`Failed to load P&L: ${error.message}`);
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    /**
+     * Render P&L statement
+     */
+    function renderProfitLoss(data) {
+      // Update period
+      const fromDate = document.getElementById('fromDate').value;
+      const toDate = document.getElementById('toDate').value;
+      let periodText = '';
+
+      if (fromDate && toDate) {
+        periodText = `For the period from ${fromDate} to ${toDate}`;
+      } else if (fromDate) {
+        periodText = `From ${fromDate} onwards`;
+      } else if (toDate) {
+        periodText = `Until ${toDate}`;
+      } else {
+        periodText = new Date().getFullYear() + ' (All records)';
+      }
+
+      document.getElementById('periodText').textContent = periodText;
+
+      // Render revenue section
+      const revenueAccounts = data.revenue?.accounts || [];
+      const revenueTotal = parseFloat(data.revenue?.total || 0);
+
+      const revenueHtml = revenueAccounts.length > 0
+        ? revenueAccounts.map(acc => `
+            <div class="pl-item">
+              <div class="pl-item-name">
+                <span class="pl-item-code">${acc.code || 'N/A'}</span>
+                <span class="pl-item-label">${acc.name || 'Unknown'}</span>
+              </div>
+              <div class="pl-item-amount">${(parseFloat(acc.credit) || 0).toFixed(2)}</div>
+            </div>
+          `).join('')
+        : '<div class="pl-item" style="color: #999;">No revenue accounts found</div>';
+
+      document.getElementById('revenueItems').innerHTML = revenueHtml;
+      document.getElementById('totalRevenue').textContent = revenueTotal.toFixed(2);
+
+      // Render expense section
+      const expenseAccounts = data.expenses?.accounts || [];
+      const expenseTotal = parseFloat(data.expenses?.total || 0);
+
+      const expenseHtml = expenseAccounts.length > 0
+        ? expenseAccounts.map(acc => `
+            <div class="pl-item">
+              <div class="pl-item-name">
+                <span class="pl-item-code">${acc.code || 'N/A'}</span>
+                <span class="pl-item-label">${acc.name || 'Unknown'}</span>
+              </div>
+              <div class="pl-item-amount">${(parseFloat(acc.debit) || 0).toFixed(2)}</div>
+            </div>
+          `).join('')
+        : '<div class="pl-item" style="color: #999;">No expense accounts found</div>';
+
+      document.getElementById('expenseItems').innerHTML = expenseHtml;
+      document.getElementById('totalExpenses').textContent = expenseTotal.toFixed(2);
+
+      // Calculate and render net profit
+      const netProfit = parseFloat(data.netProfit || 0);
+      const netResultBox = document.getElementById('netResultBox');
+      const netAmountEl = document.getElementById('netProfitAmount');
+
+      netAmountEl.textContent = Math.abs(netProfit).toFixed(2);
+
+      if (netProfit < 0) {
+        netResultBox.className = 'pl-net-result loss';
+        netResultBox.innerHTML = `
+          <span>NET LOSS</span>
+          <div class="pl-net-result-amount">${Math.abs(netProfit).toFixed(2)}</div>
+        `;
+      } else {
+        netResultBox.className = 'pl-net-result';
+        netResultBox.innerHTML = `
+          <span>NET PROFIT</span>
+          <div class="pl-net-result-amount">${netProfit.toFixed(2)}</div>
+        `;
+      }
+    }
+
+    /**
+     * Apply filters
+     */
+    function applyFilters() {
+      loadProfitLoss();
+    }
+
+    /**
+     * Reset filters
+     */
+    function resetFilters() {
+      document.getElementById('fromDate').value = '';
+      document.getElementById('toDate').value = '';
+      loadProfitLoss();
+    }
+
+    /**
+     * Export to CSV
+     */
+    function exportToCSV() {
+      if (!plData) {
+        alert('No data to export');
+        return;
+      }
+
+      const fromDate = document.getElementById('fromDate').value || 'All';
+      const toDate = document.getElementById('toDate').value || 'All';
+
+      let csv = `Profit & Loss Statement\n`;
+      csv += `Period: ${fromDate} to ${toDate}\n\n`;
+
+      csv += `REVENUE / INCOME\n`;
+      const revenueAccounts = plData.revenue?.accounts || [];
+      revenueAccounts.forEach(acc => {
+        csv += `"${acc.code}","${acc.name}","${(parseFloat(acc.credit) || 0).toFixed(2)}"\n`;
+      });
+      csv += `"TOTAL REVENUE","","${(parseFloat(plData.revenue?.total || 0)).toFixed(2)}"\n\n`;
+
+      csv += `EXPENSES\n`;
+      const expenseAccounts = plData.expenses?.accounts || [];
+      expenseAccounts.forEach(acc => {
+        csv += `"${acc.code}","${acc.name}","${(parseFloat(acc.debit) || 0).toFixed(2)}"\n`;
+      });
+      csv += `"TOTAL EXPENSES","","${(parseFloat(plData.expenses?.total || 0)).toFixed(2)}"\n\n`;
+
+      const netProfit = parseFloat(plData.netProfit || 0);
+      csv += `"NET ${netProfit < 0 ? 'LOSS' : 'PROFIT'}","","${Math.abs(netProfit).toFixed(2)}"\n`;
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `profit-loss-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    /**
+     * Toggle UI sections
+     */
+    function showLoading(show) {
+      document.getElementById('loadingIndicator').style.display = show ? 'flex' : 'none';
+      document.getElementById('statementWrapper').style.display = show ? 'none' : 'block';
+    }
+
+    function showError(message) {
+      const el = document.getElementById('errorMessage');
+      el.textContent = message;
+      el.style.display = 'block';
+      document.getElementById('successMessage').style.display = 'none';
+    }
+
+    function showSuccess(message) {
+      const el = document.getElementById('successMessage');
+      el.textContent = message;
+      el.style.display = 'block';
+      document.getElementById('errorMessage').style.display = 'none';
+    }
+  </script>
+</body>
+</html>

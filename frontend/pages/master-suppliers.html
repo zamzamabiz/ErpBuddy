@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supplier Master - ErpBuddy</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+        .navbar { background: #667eea; padding: 1rem; color: white; display: flex; justify-content: space-between; }
+        .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+        .card { background: white; border-radius: 8px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        h2 { margin-bottom: 1.5rem; color: #333; }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+        .form-group { display: flex; flex-direction: column; }
+        label { font-weight: 500; margin-bottom: 0.5rem; color: #555; }
+        input { padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem; }
+        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-secondary { background: #e0e0e0; color: #333; margin-left: 0.5rem; }
+        .table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .table th, .table td { padding: 1rem; text-align: left; border-bottom: 1px solid #eee; }
+        .table th { background: #f5f5f5; font-weight: 600; color: #555; }
+        .message { padding: 1rem; border-radius: 4px; margin-bottom: 1rem; display: none; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>ErpBuddy - Supplier Master</h1>
+        <div>
+            <button class="btn btn-secondary" onclick="goToDashboard()">Dashboard</button>
+            <button class="btn btn-secondary" onclick="goToPurchases()">Purchases</button>
+            <button class="btn btn-secondary" onclick="goToItems()">Items</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="errorMessage" class="message error"></div>
+        <div id="successMessage" class="message success"></div>
+
+        <div class="card">
+            <h2>Add New Supplier</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Supplier Name *</label>
+                    <input type="text" id="supplierName" placeholder="Enter supplier name">
+                </div>
+                <div class="form-group">
+                    <label>Contact Person</label>
+                    <input type="text" id="supplierContact" placeholder="Contact person name">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="supplierEmail" placeholder="supplier@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="text" id="supplierPhone" placeholder="Phone number">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Address</label>
+                <input type="text" id="supplierAddress" placeholder="Full address">
+            </div>
+            <button class="btn btn-primary" onclick="addSupplier()">Add Supplier</button>
+        </div>
+
+        <div class="card">
+            <h2>Supplier List</h2>
+            <table class="table" id="suppliersTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Contact</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="suppliersBody">
+                    <tr><td colspan="5" style="text-align: center; padding: 2rem;">Loading suppliers...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!isAuthenticated()) {
+                window.location.href = '../login.html';
+                return;
+            }
+            loadSuppliers();
+        });
+
+        async function loadSuppliers() {
+            try {
+                const response = await apiGet('/suppliers/simple');
+                const suppliers = response.data || [];
+                
+                const tbody = document.getElementById('suppliersBody');
+                if (suppliers.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem;">No suppliers found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = suppliers.map(supplier => `
+                    <tr>
+                        <td>${supplier.name}</td>
+                        <td>${supplier.contact || '-'}</td>
+                        <td>${supplier.email || '-'}</td>
+                        <td>${supplier.phone || '-'}</td>
+                        <td>
+                            <button class="btn btn-secondary" onclick="editSupplier('${supplier._id}')">Edit</button>
+                            <button class="btn btn-secondary" onclick="deleteSupplier('${supplier._id}', '${supplier.name}')">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                showError('Failed to load suppliers: ' + error.message);
+            }
+        }
+
+        async function addSupplier() {
+            const name = document.getElementById('supplierName').value.trim();
+            const contact = document.getElementById('supplierContact').value.trim();
+            const email = document.getElementById('supplierEmail').value.trim();
+            const phone = document.getElementById('supplierPhone').value.trim();
+            const address = document.getElementById('supplierAddress').value.trim();
+
+            if (!name) {
+                showError('Supplier name is required');
+                return;
+            }
+
+            try {
+                const response = await apiPost('/suppliers/simple', {
+                    name,
+                    contact,
+                    email,
+                    phone,
+                    address
+                });
+
+                showSuccess('Supplier added successfully');
+                document.getElementById('supplierName').value = '';
+                document.getElementById('supplierContact').value = '';
+                document.getElementById('supplierEmail').value = '';
+                document.getElementById('supplierPhone').value = '';
+                document.getElementById('supplierAddress').value = '';
+                loadSuppliers();
+            } catch (error) {
+                showError('Failed to add supplier: ' + error.message);
+            }
+        }
+
+        function editSupplier(supplierId) {
+            alert('Edit feature coming soon');
+        }
+
+        async function deleteSupplier(supplierId, supplierName) {
+            if (!confirm(`Delete supplier "${supplierName}"?`)) return;
+            
+            try {
+                await apiDelete(`/suppliers/${supplierId}`);
+                showSuccess('Supplier deleted');
+                loadSuppliers();
+            } catch (error) {
+                showError('Failed to delete supplier: ' + error.message);
+            }
+        }
+
+        function showError(message) {
+            const el = document.getElementById('errorMessage');
+            el.textContent = message;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 3000);
+        }
+
+        function showSuccess(message) {
+            const el = document.getElementById('successMessage');
+            el.textContent = message;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 3000);
+        }
+
+        function goToDashboard() {
+            window.location.href = '../dashboard.html';
+        }
+
+        function goToPurchases() {
+            window.location.href = '../purchase-list.html';
+        }
+
+        function goToItems() {
+            window.location.href = 'master-items.html';
+        }
+    </script>
+</body>
+</html>

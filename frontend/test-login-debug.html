@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .container {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .log {
+            background: #333;
+            color: #fff;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+    </style>
+</head>
+<body>
+    <h1>Login Debug Test</h1>
+    
+    <div class="container">
+        <h3>Test Credentials</h3>
+        <p><strong>Email:</strong> user@company.local</p>
+        <p><strong>Password:</strong> password123</p>
+        
+        <button onclick="testLogin()">Test Login</button>
+        <button onclick="clearLog()">Clear Log</button>
+        <button onclick="checkLocalStorage()">Check LocalStorage</button>
+        
+        <h3>Console Log</h3>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script>
+        const logElement = document.getElementById('log');
+        
+        function log(message, className = '') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span class="${className}">[${timestamp}] ${message}</span>`;
+            logElement.appendChild(logEntry);
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        function clearLog() {
+            logElement.innerHTML = '';
+            log('Log cleared', 'warning');
+        }
+        
+        function checkLocalStorage() {
+            log('=== Checking LocalStorage ===', 'warning');
+            const token = localStorage.getItem('auth_token');
+            const userData = localStorage.getItem('user_data');
+            
+            if (token) {
+                log(`✅ Token found (${token.length} chars)`, 'success');
+                log(`Token: ${token.substring(0, 50)}...`, '');
+            } else {
+                log('❌ No token found', 'error');
+            }
+            
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    log(`✅ User data found: ${user.email}`, 'success');
+                } catch (e) {
+                    log(`❌ Invalid user data: ${e.message}`, 'error');
+                }
+            } else {
+                log('❌ No user data found', 'error');
+            }
+        }
+        
+        async function testLogin() {
+            log('=== Starting Login Test ===', 'warning');
+            
+            const email = 'user@company.local';
+            const password = 'password123';
+            
+            log(`Testing login for: ${email}`, '');
+            
+            try {
+                // Test the API directly first
+                log('Testing API endpoint...', '');
+                const apiResponse = await fetch('http://localhost:5000/api/test');
+                const apiText = await apiResponse.text();
+                log(`API test response: ${apiText} (Status: ${apiResponse.status})`, 
+                    apiResponse.ok ? 'success' : 'error');
+                
+                // Now test login
+                log('Attempting login...', '');
+                const response = await fetch('http://localhost:5000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+                
+                log(`Login response status: ${response.status}`, 
+                    response.ok ? 'success' : 'error');
+                
+                const data = await response.json();
+                log(`Login response data: ${JSON.stringify(data, null, 2)}`, '');
+                
+                if (response.ok && data.success) {
+                    log('✅ Login successful!', 'success');
+                    log(`Token received: ${data.data.token ? 'Yes' : 'No'}`, 
+                        data.data.token ? 'success' : 'error');
+                    
+                    // Test storing in localStorage
+                    if (data.data.token) {
+                        localStorage.setItem('auth_token', data.data.token);
+                        localStorage.setItem('user_data', JSON.stringify(data.data.user));
+                        log('✅ Token stored in localStorage', 'success');
+                    }
+                } else {
+                    log(`❌ Login failed: ${data.error || 'Unknown error'}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Network error: ${error.message}`, 'error');
+                log('Check if backend is running on http://localhost:5000', 'warning');
+            }
+        }
+        
+        // Initial log
+        log('Ready to test login. Click "Test Login" to begin.', '');
+        log('Make sure backend is running on http://localhost:5000', 'warning');
+    </script>
+</body>
+</html>

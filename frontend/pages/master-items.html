@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Item Master - ErpBuddy</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+        .navbar { background: #667eea; padding: 1rem; color: white; display: flex; justify-content: space-between; }
+        .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+        .card { background: white; border-radius: 8px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        h2 { margin-bottom: 1.5rem; color: #333; }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+        .form-group { display: flex; flex-direction: column; }
+        label { font-weight: 500; margin-bottom: 0.5rem; color: #555; }
+        input, select { padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem; }
+        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-secondary { background: #e0e0e0; color: #333; margin-left: 0.5rem; }
+        .table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .table th, .table td { padding: 1rem; text-align: left; border-bottom: 1px solid #eee; }
+        .table th { background: #f5f5f5; font-weight: 600; color: #555; }
+        .message { padding: 1rem; border-radius: 4px; margin-bottom: 1rem; display: none; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>ErpBuddy - Item Master</h1>
+        <div>
+            <button class="btn btn-secondary" onclick="goToDashboard()">Dashboard</button>
+            <button class="btn btn-secondary" onclick="goToPurchases()">Purchases</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="errorMessage" class="message error"></div>
+        <div id="successMessage" class="message success"></div>
+
+        <div class="card">
+            <h2>Add New Item</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Item Name *</label>
+                    <input type="text" id="itemName" placeholder="Enter item name">
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <input type="text" id="itemCategory" placeholder="e.g., Raw Material">
+                </div>
+                <div class="form-group">
+                    <label>Unit</label>
+                    <select id="itemUnit">
+                        <option value="PCS">Pieces</option>
+                        <option value="KG">Kilograms</option>
+                        <option value="LITER">Liters</option>
+                        <option value="METER">Meters</option>
+                        <option value="BOX">Box</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="addItem()">Add Item</button>
+        </div>
+
+        <div class="card">
+            <h2>Item List</h2>
+            <table class="table" id="itemsTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Unit</th>
+                        <th>Current Stock</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="itemsBody">
+                    <tr><td colspan="5" style="text-align: center; padding: 2rem;">Loading items...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!isAuthenticated()) {
+                window.location.href = '../login.html';
+                return;
+            }
+            loadItems();
+        });
+
+        async function loadItems() {
+            try {
+                const response = await apiGet('/items/simple');
+                const items = response.data || [];
+                
+                const tbody = document.getElementById('itemsBody');
+                if (items.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem;">No items found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = items.map(item => `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.category || 'General'}</td>
+                        <td>${item.unit || 'PCS'}</td>
+                        <td>${item.currentStock || 0}</td>
+                        <td>
+                            <button class="btn btn-secondary" onclick="editItem('${item._id}')">Edit</button>
+                            <button class="btn btn-secondary" onclick="deleteItem('${item._id}', '${item.name}')">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                showError('Failed to load items: ' + error.message);
+            }
+        }
+
+        async function addItem() {
+            const name = document.getElementById('itemName').value.trim();
+            const category = document.getElementById('itemCategory').value.trim();
+            const unit = document.getElementById('itemUnit').value;
+
+            if (!name) {
+                showError('Item name is required');
+                return;
+            }
+
+            try {
+                const response = await apiPost('/items/simple', {
+                    name,
+                    category: category || 'General',
+                    unit: unit || 'PCS'
+                });
+
+                showSuccess('Item added successfully');
+                document.getElementById('itemName').value = '';
+                document.getElementById('itemCategory').value = '';
+                loadItems();
+            } catch (error) {
+                showError('Failed to add item: ' + error.message);
+            }
+        }
+
+        function editItem(itemId) {
+            alert('Edit feature coming soon');
+        }
+
+        async function deleteItem(itemId, itemName) {
+            if (!confirm(`Delete item "${itemName}"?`)) return;
+            
+            try {
+                await apiDelete(`/items/${itemId}`);
+                showSuccess('Item deleted');
+                loadItems();
+            } catch (error) {
+                showError('Failed to delete item: ' + error.message);
+            }
+        }
+
+        function showError(message) {
+            const el = document.getElementById('errorMessage');
+            el.textContent = message;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 3000);
+        }
+
+        function showSuccess(message) {
+            const el = document.getElementById('successMessage');
+            el.textContent = message;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 3000);
+        }
+
+        function goToDashboard() {
+            window.location.href = '../dashboard.html';
+        }
+
+        function goToPurchases() {
+            window.location.href = '../purchase-list.html';
+        }
+    </script>
+</body>
+</html>

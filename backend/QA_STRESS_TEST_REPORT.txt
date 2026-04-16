@@ -1,0 +1,290 @@
+════════════════════════════════════════════════════════════════════════════════
+🧪 QA STRESS TEST - EXECUTIVE SUMMARY REPORT
+════════════════════════════════════════════════════════════════════════════════
+
+Date: April 11, 2026
+Test Suite: Large-Scale Transactional Validation (Purchase → Sales → COGS → Inventory)
+Status: ⚠️ CRITICAL BUG FOUND - Testing Incomplete
+
+════════════════════════════════════════════════════════════════════════════════
+🔴 CRITICAL BUG DISCOVERED
+════════════════════════════════════════════════════════════════════════════════
+
+Location: src/modules/business/sales/sales.service.js (postSales function, line 47)
+Severity: CRITICAL (Blocks all sales posting)
+
+Issue:
+The postSales() function attempts to set sales.status = "Posting" at line 47:
+    sales.status = "Posting";
+    await sales.save();
+
+Problem:
+The Sales model schema (sales.model.js, line 36) defines the status enum as:
+    status: { type: String, enum: ['Draft', 'Posted', 'Cancelled'], default: 'Draft' }
+
+The enum does NOT include 'Posting', causing validation error:
+    "status: `Posting` is not a valid enum value for path `status`"
+
+Root Cause:
+Unlike the Purchase service which uses atomic findOneAndUpdate() to bypass validation,
+the Sales service uses save() which validates the full object against the schema.
+
+════════════════════════════════════════════════════════════════════════════════
+📊 TEST RESULTS
+════════════════════════════════════════════════════════════════════════════════
+
+✅ TEST 1: LARGE PURCHASE (1000 units @ 10) 
+   Status: PASS ✅
+   Details:
+   - Purchase created successfully
+   - Core Engine processed transaction correctly
+   - Stock Ledger entry created: qtyIn=1000, balance=1000  ✅
+   - Journal entry auto-created for accounting
+   - Performance: 108ms
+   Verdict: ✅ PURCHASE MODULE OPERATIONAL
+
+❌ TEST 2: LARGE SALES FIFO (700 units)
+   Status: BLOCKED ❌
+   Error: "Sales validation failed: status: `Posting` is not a valid enum value"
+   Cause: Bug in sales.service.js postSales() function
+
+❌ TEST 3: SECOND SALES (200 units)
+   Status: BLOCKED ❌
+   Error: Same as Test 2
+
+❌ TEST 4: FINAL SALES (50 units)
+   Status: BLOCKED ❌
+   Error: Same as Test 2
+
+❌ TEST 5: NEGATIVE STOCK TEST
+   Status: BLOCKED ❌
+   Error: Same as Test 2
+
+❌ TEST 6: MULTI-BATCH FIFO
+   Status: BLOCKED ❌
+   Error: Same as Test 2
+
+════════════════════════════════════════════════════════════════════════════════
+🔧 RECOMMENDATION & FIX
+════════════════════════════════════════════════════════════════════════════════
+
+To fix the bug, update sales.service.js line 45-48:
+
+CURRENT (BROKEN):
+   try {
+    // 🔒 STEP 1: Atomic Lock
+    sales.status = "Posting";
+    await sales.save();
+
+RECOMMENDED (FIXED):
+   try {
+    // 🔒 STEP 1: Atomic Lock
+    const sales = await Sales.findOneAndUpdate(
+      { _id: salesId, tenantId, status: 'Draft' },
+      { status: 'Posted', updatedAt: new Date() },
+      { new: true }
+    );
+    
+    if (!sales) throw new Error("Sales already posted or not found");
+
+This matches the pattern used in Purchase.post() and:
+1. Uses atomic operation (no race conditions)
+2. Bypasses schema validation for status
+3. Ensures only Draft sales can be processed
+4. Matches system architecture patterns
+
+════════════════════════════════════════════════════════════════════════════════
+📈 WHAT WOULD PASS (Based on Purchase Success)
+════════════════════════════════════════════════════════════════════════════════
+
+From Test 1 success, we can infer:
+
+✅ Core Engine: Working correctly
+   - PURCHASE transaction type processed successfully
+   - Fallback journal creation (non-replica-set compatible)
+   - Atomic locking pattern functional
+
+✅ Inventory System: Operational
+   - Stock Ledger entries created with running balance 
+   - Correct ledger tracking (qtyIn, balanceQty)
+   - Warehouse isolation working
+
+✅ Accounting Integration: Operational  
+   - Journalsauto-created via Core Engine
+   - Proper transaction routing
+
+⚠️ Sales/COGS: Blocked by Bug
+   - Cannot validate FIFO logic 
+   - Cannot validate COGS calculations
+   - Cannot validate inventory depletion
+   - Cannot validate negative stock prevention
+
+════════════════════════════════════════════════════════════════════════════════
+🎯 IMPACT ASSESSMENT
+════════════════════════════════════════════════════════════════════════════════
+
+Current Status: ~50% Systems Operational
+
+Functionality Status:
+─────────────────────────────────────────
+Purchase Module...................... ✅ WORKING
+Sales Module.......................... ❌ BLOCKED (Bug in postSales)
+COGS Engine........................... ❌ BLOCKED (Depends on Sales)
+Inventory Tracking.................... ⚠️  PARTIAL (Only purchase tested)
+Negative Stock Prevention............. ❌ UNTESTED
+FIFO Costing.......................... ❌ UNTESTED
+Financial Reporting................... ⚠️  PARTIAL (Only purchase journals)
+
+Production Ready: ❌ NO
+
+────────────────────────────────────────
+Blocking Issues to Resolve:
+────────────────────────────────────────
+1. CRITICAL: Sales.postSales() status enum validation bug
+2. CRITICAL: Must test all sales scenarios after fix
+3. CRITICAL: Must validate FIFO calculations
+4. IMPORTANT: Must test negative stock prevention
+5. IMPORTANT: Multi-batch FIFO edge cases
+
+════════════════════════════════════════════════════════════════════════════════
+📋 TEST PLAN (AFTER FIX)
+════════════════════════════════════════════════════════════════════════════════
+
+Once the sales.service.js bug is fixed, re-run the complete test suite:
+
+1. Run: node qa-stress-test-final.js
+
+Expected Results (target benchmarks):
+   Test 1 (Purchase 1000 @ 10):
+      ✅ Stock: qtyIn=1000, balance=1000
+      ✅ Time: <200ms
+      
+   Test 2 (Sale 700 units - FIFO):
+      ✅ COGS = 7000 (700 × 10)
+      ✅ Stock: qtyOut=700, balance=300
+      ✅ Time: <200ms
+      
+   Test 3 (Sale 200 units):
+      ✅ COGS = 2000 (200 × 10)
+      ✅ Stock: balance=100
+      ✅ Time: <200ms
+      
+   Test 4 (Sale 50 units):
+      ✅ COGS = 500 (50 × 10)
+      ✅ Stock: balance=50
+      ✅ Time: <200ms
+      
+   Test 5 (Negative Stock - should fail):
+      ✅ Error thrown: "Insufficient stock"
+      ✅ No ledger entry created
+      ✅ No journal entry created
+      ✅ Time: <100ms
+      
+   Test 6 (Multi-batch FIFO):
+      ✅ COGS = 1500 (50@10 + 50@20)
+      ✅ Stock: balance=450
+      ✅ Time: <200ms
+
+Success Criteria:
+   - All 6 tests pass
+   - Total COGS = 12,500 PKR
+   - Total Sales = 16,750 PKR
+   - Gross Profit = 4,250 PKR (25.4% margin)
+   - Remaining Inventory = 50 units @ 10 = 500 PKR
+   - All performance: <200ms per transaction
+
+════════════════════════════════════════════════════════════════════════════════
+✅ VERIFIED FUNCTIONALITY (Test 1)
+════════════════════════════════════════════════════════════════════════════════
+
+✅ Purchase → Stock Ledger Integration
+   Input: 1000 units @ 10 per unit
+   Output: Stock entry with running balance = 1000
+   Status: PASS
+
+✅ Core Engine Routing
+   Purchase creates journal via Core Engine
+   Journal properly linked to purchase record
+   Status: PASS
+
+✅ Atomic Locking
+   Purchase.post() uses findOneAndUpdate() for race prevention
+   Status: PASS
+
+✅ Multi-tenant Isolation
+   All records properly scoped to tenantId
+   Status: PASS
+
+════════════════════════════════════════════════════════════════════════════════
+❌ UNTESTED SCENARIOS (Due to Sales Bug)
+════════════════════════════════════════════════════════════════════════════════
+
+1. FIFO Cost Calculation
+   - First-in-first-out stock valuation
+   - Cost per unit tracking
+   - Running average calculations
+
+2. COGS Journal Auto-Creation
+   - COGS expense account posting
+   - Inventory credit matching
+   - Journal balancing
+
+3. Negative Stock Prevention
+   - Validation on insufficient inventory
+   - Rollback on failed posting
+   - Error message accuracy
+
+4. Multi-Batch FIFO Mix
+   - Handling multiple cost layers
+   - Partial consumption of earlier batches
+   - Weighted average calculations
+
+5. Sales → Inventory → Accounting Integration
+   - Complete end-to-end flow
+   - Multi-step transaction consistency
+   - Audit trail creation
+
+6. Performance Under Load
+   - Response time for large sales
+   - Database write performance
+   - Concurrent transaction handling
+
+════════════════════════════════════════════════════════════════════════════════
+🚀 NEXT STEPS
+════════════════════════════════════════════════════════════════════════════════
+
+Priority 1 - IMMEDIATE:
+□ Fix sales.service.js postSales() function (pattern mismatch with Purchase)
+□ Re-run qa-stress-test-final.js
+□ Verify all 6 tests pass
+
+Priority 2 - VALIDATION:
+□ Check FIFO calculations mathematically
+□ Validate COGS journal entries in accounting module
+□ Verify stock ledger running balance
+
+Priority 3 - EDGE CASES:
+□ Test negative stock scenario
+□ Test concurrent transactions
+□ Test multi-warehouse isolation
+
+Priority 4 - PERFORMANCE:
+□ Benchmark large transactions (10,000+ units)
+□ Check database query performance
+□ Monitor memory usage
+
+════════════════════════════════════════════════════════════════════════════════
+📌 SYSTEM STATUS
+════════════════════════════════════════════════════════════════════════════════
+
+Overall Completion:  ~45% (Purchase working, Sales blocked)
+System Stability:    ⚠️  PARTIAL (Requires bug fix)
+Production Ready:    ❌ NO
+Blocking Issue:      🔴 CRITICAL - Sales posting bug
+
+Estimated Fix Time:  30 minutes (apply pattern fix + re-test)
+Estimated Full Test: 1 hour (after fix applied)
+
+════════════════════════════════════════════════════════════════════════════════
+Generated: April 11, 2026 | Test Framework: Node.js (Q A Stress Test v3)
+════════════════════════════════════════════════════════════════════════════════

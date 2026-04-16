@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - ERP Buddy</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+  <div class="min-h-screen">
+    <!-- Header -->
+    <header class="bg-blue-600 text-white p-4 shadow">
+      <div class="container mx-auto flex justify-between items-center">
+        <h1 class="text-2xl font-bold">Dashboard</h1>
+        <nav>
+          <a href="dashboard.html" class="mr-4 hover:underline">Dashboard</a>
+          <a href="ledger.html" class="mr-4 hover:underline">Ledger</a>
+          <a href="trial-balance.html" class="mr-4 hover:underline">Trial Balance</a>
+          <a href="profit-loss.html" class="mr-4 hover:underline">P&L</a>
+          <button onclick="logout()" class="bg-red-500 px-3 py-1 rounded hover:bg-red-600">Logout</button>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto p-6">
+      <!-- Error Message -->
+      <div id="errorMessage" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"></div>
+
+      <!-- Loading Indicator -->
+      <div id="loadingIndicator" class="hidden text-center py-8">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <p class="mt-2 text-gray-600">Loading...</p>
+      </div>
+
+      <!-- Date Filter -->
+      <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <div class="flex gap-4 items-end">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">As of Date</label>
+            <input type="date" id="asOfDate" class="border rounded p-2">
+          </div>
+          <button onclick="loadDashboard()" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Cards -->
+      <div id="kpiCards" class="grid grid-cols-3 gap-6 mb-6">
+        <!-- Total Sales -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-600 mb-1">Total Sales</p>
+              <p class="text-2xl font-bold" id="totalSales">0.00</p>
+            </div>
+            <div class="bg-blue-100 p-3 rounded-full">
+              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gross Profit -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-600 mb-1">Gross Profit</p>
+              <p class="text-2xl font-bold" id="grossProfit">0.00</p>
+            </div>
+            <div class="bg-green-100 p-3 rounded-full">
+              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stock Value -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-600 mb-1">Stock Value</p>
+              <p class="text-2xl font-bold" id="stockValue">0.00</p>
+            </div>
+            <div class="bg-purple-100 p-3 rounded-full">
+              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold mb-4">Quick Links</h2>
+        <div class="grid grid-cols-4 gap-4">
+          <a href="purchase-form.html" class="bg-red-50 p-4 rounded text-center hover:bg-red-100 transition">
+            <p class="font-semibold text-red-600">New Purchase</p>
+          </a>
+          <a href="sales-form-simple.html" class="bg-blue-50 p-4 rounded text-center hover:bg-blue-100 transition">
+            <p class="font-semibold text-blue-600">New Sale</p>
+          </a>
+          <a href="ledger.html" class="bg-green-50 p-4 rounded text-center hover:bg-green-100 transition">
+            <p class="font-semibold text-green-600">View Ledger</p>
+          </a>
+          <a href="trial-balance.html" class="bg-purple-50 p-4 rounded text-center hover:bg-purple-100 transition">
+            <p class="font-semibold text-purple-600">Trial Balance</p>
+          </a>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/layout.js"></script>
+  <script>
+    // Load dashboard data from backend API
+    async function loadDashboard() {
+      const asOfDate = document.getElementById('asOfDate').value;
+
+      // Clear previous errors
+      document.getElementById('errorMessage').classList.add('hidden');
+
+      Layout.showLoading(true);
+
+      try {
+        // Fetch dashboard metrics from backend
+        let url = `${API_BASE}/dashboard`;
+        if (asOfDate) {
+          url += `?asOfDate=${asOfDate}`;
+        }
+
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${Layout.getToken()}`,
+            'x-tenant-id': Layout.getTenantId()
+          }
+        });
+
+        if (response.status === 401) {
+          Layout.handleApiError({ status: 401 }, 'Authentication failed');
+          return;
+        }
+
+        const result = await response.json();
+
+        if (result.success) {
+          const metrics = result.data;
+
+          // Update UI with backend data
+          document.getElementById('totalSales').textContent = Layout.formatCurrency(metrics.totalSales);
+          document.getElementById('totalSales').className = `text-2xl font-bold ${metrics.totalSales >= 0 ? 'text-blue-600' : 'text-red-600'}`;
+
+          document.getElementById('grossProfit').textContent = Layout.formatCurrency(metrics.grossProfit);
+          document.getElementById('grossProfit').className = `text-2xl font-bold ${metrics.isProfitable ? 'text-green-600' : 'text-red-600'}`;
+
+          document.getElementById('stockValue').textContent = Layout.formatCurrency(metrics.stockValue);
+          document.getElementById('stockValue').className = `text-2xl font-bold ${metrics.stockValue >= 0 ? 'text-purple-600' : 'text-orange-600'}`;
+
+          // Show cards
+          document.getElementById('kpiCards').classList.remove('hidden');
+        } else {
+          Layout.showError('Error loading dashboard: ' + result.error);
+        }
+      } catch (error) {
+        Layout.showError('Error loading dashboard: ' + error.message);
+      } finally {
+        Layout.showLoading(false);
+      }
+    }
+
+    // Set default date to today
+    document.getElementById('asOfDate').valueAsDate = new Date();
+
+    // Safe loader to wait for Layout to be fully initialized
+    function waitForLayoutAndLoad() {
+      if (typeof Layout !== 'undefined' && typeof Layout.getToken === 'function') {
+        loadDashboard();
+      } else {
+        console.log('Waiting for Layout...');
+        setTimeout(waitForLayoutAndLoad, 100);
+      }
+    }
+
+    // Load dashboard on page load with safe initialization
+    document.addEventListener('DOMContentLoaded', () => {
+      waitForLayoutAndLoad();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journal Entries - ErpBuddy</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+  <style>
+    .journal-container {
+      max-width: 1200px;
+      margin: 20px auto;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+    
+    .journal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #f0f0f0;
+      padding-bottom: 15px;
+    }
+    
+    .journal-header h1 {
+      font-size: 28px;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+    }
+    
+    .journal-controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .journal-filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 6px;
+    }
+    
+    .filter-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .filter-group label {
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 5px;
+      font-size: 12px;
+    }
+    
+    .filter-group input,
+    .filter-group select {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    .table-wrapper {
+      overflow-x: auto;
+      margin-top: 20px;
+    }
+    
+    .journal-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    
+    .journal-table thead {
+      background: #f8f9fa;
+      border-bottom: 2px solid #dee2e6;
+    }
+    
+    .journal-table th {
+      padding: 12px 15px;
+      text-align: left;
+      font-weight: 600;
+      color: #333;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
+    
+    .journal-table td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #dee2e6;
+      color: #555;
+    }
+    
+    .journal-table tbody tr:hover {
+      background: #f8f9fa;
+    }
+    
+    .journal-table tbody tr.purchase-row {
+      background: #fffbf0;
+    }
+    
+    .journal-table tbody tr.purchase-row:hover {
+      background: #fff8e6;
+    }
+    
+    .account-code {
+      font-weight: 600;
+      color: #0066cc;
+      font-family: monospace;
+    }
+    
+    .debit-amount,
+    .credit-amount {
+      text-align: right;
+      font-family: monospace;
+      font-weight: 500;
+    }
+    
+    .debit-amount {
+      color: #dc3545;
+    }
+    
+    .credit-amount {
+      color: #28a745;
+    }
+    
+    .amount-zero {
+      color: #999;
+    }
+    
+    .journal-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 2px solid #dee2e6;
+    }
+    
+    .summary-card {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 6px;
+      text-align: center;
+    }
+    
+    .summary-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #999;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    
+    .summary-value {
+      font-size: 24px;
+      font-weight: 600;
+      color: #333;
+      font-family: monospace;
+    }
+    
+    .summary-value.total-debit {
+      color: #dc3545;
+    }
+    
+    .summary-value.total-credit {
+      color: #28a745;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .status-posted {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .status-draft {
+      background: #fff3cd;
+      color: #856404;
+    }
+    
+    .error-message {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 12px 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      border-left: 4px solid #dc3545;
+    }
+    
+    .success-message {
+      background: #d4edda;
+      color: #155724;
+      padding: 12px 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      border-left: 4px solid #28a745;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+    
+    .loading spinner {
+      width: 40px;
+      height: 40px;
+    }
+    
+    .back-button {
+      color: #0066cc;
+      text-decoration: none;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 20px;
+    }
+    
+    .back-button:hover {
+      text-decoration: underline;
+    }
+    
+    @media (max-width: 768px) {
+      .journal-filters {
+        flex-direction: column;
+      }
+      
+      .journal-table {
+        font-size: 12px;
+      }
+      
+      .journal-table th,
+      .journal-table td {
+        padding: 8px 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="journal-container">
+    <div class="back-button" onclick="history.back()">← Back</div>
+    
+    <div class="journal-header">
+      <h1>📔 Journal Entries</h1>
+      <span id="journalStatus" class="status-badge status-posted">POSTED</span>
+    </div>
+    
+    <div id="successMessage" class="success-message" style="display: none;"></div>
+    <div id="errorMessage" class="error-message" style="display: none;"></div>
+    
+    <div class="journal-filters">
+      <div class="filter-group">
+        <label>Purchase ID / Source</label>
+        <input type="text" id="filterPurchaseId" placeholder="Enter purchase ID..." oninput="filterJournal()">
+      </div>
+      <div class="filter-group">
+        <label>Account</label>
+        <input type="text" id="filterAccount" placeholder="Account code or name..." oninput="filterJournal()">
+      </div>
+      <div class="filter-group">
+        <button class="btn btn-secondary" onclick="resetFilters()" style="margin-top: auto;">Reset Filters</button>
+      </div>
+    </div>
+    
+    <div id="loadingIndicator" class="loading" style="display: none;">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p>Loading journal entries...</p>
+    </div>
+    
+    <div id="tableWrapper" class="table-wrapper">
+      <table class="journal-table" id="journalTable">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Account Code</th>
+            <th>Account Name</th>
+            <th>Type</th>
+            <th style="text-align: right;">Debit</th>
+            <th style="text-align: right;">Credit</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody id="journalTableBody">
+          <!-- Loaded dynamically -->
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="journal-summary" id="journalSummary" style="display: none;">
+      <div class="summary-card">
+        <div class="summary-label">Total Debit</div>
+        <div class="summary-value total-debit" id="totalDebit">0.00</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Total Credit</div>
+        <div class="summary-value total-credit" id="totalCredit">0.00</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Entries Count</div>
+        <div class="summary-value" id="entriesCount">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Balance Status</div>
+        <div class="summary-value" id="balanceStatus" style="font-size: 16px; color: #28a745;">✓ BALANCED</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    let allJournalData = [];
+    let currentJournalId = null;
+    let currentPurchaseId = null;
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Check authentication
+      if (!isAuthenticated()) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Get journal ID from URL params or localStorage
+      const params = new URLSearchParams(window.location.search);
+      currentJournalId = params.get('journalId');
+      currentPurchaseId = params.get('purchaseId');
+
+      if (currentJournalId) {
+        loadJournalById(currentJournalId);
+      } else if (currentPurchaseId) {
+        loadJournalByPurchaseId(currentPurchaseId);
+      } else {
+        showError('No journal or purchase ID provided');
+      }
+    });
+
+    /**
+     * Load journal by journal ID
+     */
+    async function loadJournalById(journalId) {
+      try {
+        showLoading(true);
+        const response = await apiRequest('GET', `/journal/${journalId}`);
+        
+        if (!response.data) {
+          throw new Error('No journal data in response');
+        }
+
+        renderJournal(response.data);
+        showSuccess(`Journal loaded successfully`);
+      } catch (error) {
+        showError(`Failed to load journal: ${error.message}`);
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    /**
+     * Load journal by purchase ID (source ID)
+     */
+    async function loadJournalByPurchaseId(purchaseId) {
+      try {
+        showLoading(true);
+        const response = await apiRequest('GET', `/journal/by-source/${purchaseId}`);
+        
+        if (!response.data) {
+          throw new Error('No journal found for this purchase');
+        }
+
+        renderJournal(response.data);
+        showSuccess(`Journal for Purchase ${purchaseId.substring(0, 8)}... loaded`);
+      } catch (error) {
+        showError(`Failed to load journal: ${error.message}`);
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    /**
+     * Render journal data to table
+     */
+    function renderJournal(journal) {
+      const lines = journal.lines || journal.entries || [];
+      allJournalData = lines;
+
+      // Update status
+      const statusEl = document.getElementById('journalStatus');
+      statusEl.textContent = journal.status || 'UNKNOWN';
+      statusEl.className = `status-badge status-${(journal.status || '').toLowerCase()}`;
+
+      // Render table
+      const tbody = document.getElementById('journalTableBody');
+      tbody.innerHTML = '';
+
+      if (!lines || lines.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999;">No entries found</td></tr>';
+        return;
+      }
+
+      lines.forEach((line, idx) => {
+        const row = document.createElement('tr');
+        row.className = currentPurchaseId ? 'purchase-row' : '';
+        
+        const date = journal.date ? new Date(journal.date).toLocaleDateString() : '-';
+        const debit = parseFloat(line.debit) || 0;
+        const credit = parseFloat(line.credit) || 0;
+        const debitDisplay = debit > 0 ? debit.toFixed(2) : '<span class="amount-zero">-</span>';
+        const creditDisplay = credit > 0 ? credit.toFixed(2) : '<span class="amount-zero">-</span>';
+
+        row.innerHTML = `
+          <td>${date}</td>
+          <td><span class="account-code">${line.accountCode || line.code || '-'}</span></td>
+          <td>${line.accountName || line.name || '-'}</td>
+          <td>${line.accountType || line.type || '-'}</td>
+          <td><span class="debit-amount">${debitDisplay}</span></td>
+          <td><span class="credit-amount">${creditDisplay}</span></td>
+          <td>${line.description || '-'}</td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      // Update summary
+      const totalDebit = lines.reduce((sum, l) => sum + (parseFloat(l.debit) || 0), 0);
+      const totalCredit = lines.reduce((sum, l) => sum + (parseFloat(l.credit) || 0), 0);
+      
+      document.getElementById('totalDebit').textContent = totalDebit.toFixed(2);
+      document.getElementById('totalCredit').textContent = totalCredit.toFixed(2);
+      document.getElementById('entriesCount').textContent = lines.length;
+      
+      const isBalanced = Math.abs(totalDebit - totalCredit) < 0.01;
+      document.getElementById('balanceStatus').textContent = isBalanced ? '✓ BALANCED' : '✗ UNBALANCED';
+      document.getElementById('balanceStatus').style.color = isBalanced ? '#28a745' : '#dc3545';
+      
+      document.getElementById('journalSummary').style.display = 'grid';
+    }
+
+    /**
+     * Filter journal by purchase or account
+     */
+    function filterJournal() {
+      const purchaseFilter = document.getElementById('filterPurchaseId').value.toLowerCase();
+      const accountFilter = document.getElementById('filterAccount').value.toLowerCase();
+      
+      const tbody = document.getElementById('journalTableBody');
+      const rows = tbody.querySelectorAll('tr');
+
+      rows.forEach(row => {
+        const accountCode = row.cells[1]?.textContent.toLowerCase() || '';
+        const accountName = row.cells[2]?.textContent.toLowerCase() || '';
+        
+        let matches = true;
+        
+        if (purchaseFilter && currentPurchaseId && !currentPurchaseId.includes(purchaseFilter)) {
+          matches = false;
+        }
+        
+        if (accountFilter && !accountCode.includes(accountFilter) && !accountName.includes(accountFilter)) {
+          matches = false;
+        }
+        
+        row.style.display = matches ? '' : 'none';
+      });
+    }
+
+    /**
+     * Reset filters
+     */
+    function resetFilters() {
+      document.getElementById('filterPurchaseId').value = '';
+      document.getElementById('filterAccount').value = '';
+      filterJournal();
+    }
+
+    /**
+     * UI Helpers
+     */
+    function showLoading(show) {
+      document.getElementById('loadingIndicator').style.display = show ? 'flex' : 'none';
+      document.getElementById('tableWrapper').style.display = show ? 'none' : 'block';
+    }
+
+    function showError(message) {
+      const el = document.getElementById('errorMessage');
+      el.textContent = message;
+      el.style.display = 'block';
+      document.getElementById('successMessage').style.display = 'none';
+    }
+
+    function showSuccess(message) {
+      const el = document.getElementById('successMessage');
+      el.textContent = message;
+      el.style.display = 'block';
+      document.getElementById('errorMessage').style.display = 'none';
+    }
+
+    /**
+     * Format currency
+     */
+    function formatCurrency(value) {
+      return parseFloat(value || 0).toFixed(2);
+    }
+  </script>
+</body>
+</html>

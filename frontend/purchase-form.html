@@ -1,0 +1,966 @@
+<cd class=""></cd><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Invoice - ErpBuddy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem 1.5rem;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .navbar-right {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .user-info {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Main container */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header h2 {
+            font-size: 1.8rem;
+            color: #333;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* Messages */
+        .message {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .message.show {
+            display: flex;
+        }
+
+        #errorMessage {
+            background-color: #ffebee;
+            border: 1px solid #ef5350;
+            color: #c62828;
+            border-left: 4px solid #f44336;
+        }
+
+        #successMessage {
+            background-color: #e8f5e9;
+            border: 1px solid #81c784;
+            color: #2e7d32;
+            border-left: 4px solid #4caf50;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        /* Form Container */
+        .form-card {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .form-section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin: 1.5rem 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #667eea;
+        }
+
+        /* Form rows */
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        label .required {
+            color: #f44336;
+            margin-left: 0.25rem;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="number"],
+        input[type="email"],
+        select,
+        textarea {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus,
+        input[type="number"]:focus,
+        input[type="email"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Items Table */
+        .items-section {
+            margin-top: 2rem;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f5f5f5;
+            border-bottom: 2px solid #ddd;
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #555;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #eee;
+        }
+
+        tbody tr:hover {
+            background-color: #fafafa;
+        }
+
+        td {
+            padding: 1rem;
+        }
+
+        .item-input {
+            padding: 0.6rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+
+        .item-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 0.7rem 1.2rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .btn-danger:hover {
+            background: #da190b;
+        }
+
+        .btn-small {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Totals Section */
+        .totals-section {
+            background: #f9f9f9;
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin-top: 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .total-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: white;
+            border-radius: 4px;
+            border-left: 4px solid #667eea;
+        }
+
+        .total-item strong {
+            display: block;
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.25rem;
+        }
+
+        .total-item .value {
+            font-size: 1.3rem;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .total-item.grand-total {
+            grid-column: 1 / -1;
+            border-left-color: #4caf50;
+            background: #e8f5e9;
+        }
+
+        .total-item.grand-total .value {
+            color: #2e7d32;
+            font-size: 1.5rem;
+        }
+
+        /* Action Buttons */
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+            flex-wrap: wrap;
+        }
+
+        /* Add item button */
+        .add-item-btn {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Add charge button */
+        .add-charge-btn {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .form-card {
+                padding: 1rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .totals-section {
+                grid-template-columns: 1fr;
+            }
+
+            th, td {
+                padding: 0.75rem 0.5rem;
+                font-size: 0.85rem;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <div class="navbar">
+        <h1>ErpBuddy</h1>
+        <div class="navbar-right">
+            <div class="user-info">
+                <span id="userName">User</span> 
+                <span id="userRole" style="opacity: 0.7;">-</span>
+            </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Messages -->
+        <div id="errorMessage" class="message">
+            <div class="message-content"></div>
+        </div>
+        <div id="successMessage" class="message">
+            <div class="message-content"></div>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <h2 id="pageTitle">New Purchase Invoice</h2>
+            <div class="header-buttons">
+                <button class="btn btn-secondary" onclick="goBack()">
+                    ← Back to Purchases
+                </button>
+            </div>
+        </div>
+
+        <!-- Demo Hint -->
+        <div id="demoHint" style="display: none; background: #fff3cd; border: 2px solid #ffc107; border-radius: 4px; padding: 12px; margin-bottom: 20px; color: #856404;">
+            <strong>💡 Demo Tip:</strong> When you post this purchase, stock will increase and the amount will be recorded in Accounts Payable.
+        </div>
+
+        <!-- Purchase Form -->
+        <div class="form-card">
+            <!-- Vendor Section -->
+            <div class="form-section-title">Vendor Information</div>
+                        <div class="form-row">
+                <div class="form-group">
+                    <label>
+                        Supplier
+                        <span class="required">*</span>
+                    </label>
+                    <select id="supplierId" required>
+                        <option value="">Select Supplier</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>
+                        Purchase Date
+                        <span class="required">*</span>
+                    </label>
+                    <input type="date" id="purchaseDate" required>
+                </div>
+            </div>
+
+            <!-- Items Section -->
+            <div class="form-section-title">Purchase Items</div>
+            <div class="table-container">
+                <table>
+                                        <thead>
+                        <tr>
+                            <th style="width: 25%;">Item</th>
+                            <th style="width: 15%;">Quantity</th>
+                            <th style="width: 15%;">Rate</th>
+                            <th style="width: 15%;">Amount</th>
+                            <th style="width: 15%;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsBody">
+                    </tbody>
+                </table>
+            </div>
+            <button class="btn btn-primary add-item-btn" onclick="addItemRow()">
+                + ADD ITEM
+            </button>
+
+            <!-- Charges Section -->
+            <div class="form-section-title">Additional Charges (Optional)</div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 60%;">Charge Description</th>
+                            <th style="width: 25%;">Amount</th>
+                            <th style="width: 15%;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="chargesBody">
+                    </tbody>
+                </table>
+            </div>
+            <button class="btn btn-secondary add-charge-btn" onclick="addChargeRow()">
+                + ADD CHARGE
+            </button>
+
+            <!-- Totals -->
+            <div class="totals-section">
+                <div class="total-item">
+                    <strong>Subtotal (Items)</strong>
+                    <div class="value">₹<span id="subtotal">0.00</span></div>
+                </div>
+                <div class="total-item">
+                    <strong>Additional Charges</strong>
+                    <div class="value">₹<span id="chargesTotal">0.00</span></div>
+                </div>
+                <div class="total-item grand-total">
+                    <strong>TOTAL AMOUNT</strong>
+                    <div class="value">₹<span id="grandTotal">0.00</span></div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="goBack()">
+                    CANCEL
+                </button>
+                <button class="btn btn-primary" id="submitBtn" onclick="submitForm()">
+                    SAVE & SUBMIT
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts (in order) -->
+    <script src="js/auth.js"></script>
+    <script src="js/protect.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        // Page state
+        let isEditMode = false;
+        let invoiceId = null;
+        let itemCount = 0;
+        let chargeCount = 0;
+
+        /**
+         * Initialize form on page load
+         */
+                document.addEventListener('DOMContentLoaded', async () => {
+            // Page protection - admin only
+            initializePageProtection();
+            if (!isAdmin()) {
+                alert('Only administrators can create/edit purchases');
+                window.location.href = 'purchase-list.html';
+                return;
+            }
+
+            // Display user info
+            displayUserInfo();
+
+            // Load suppliers and items
+            await loadSuppliers();
+            
+            // Set default date to today
+            document.getElementById('purchaseDate').valueAsDate = new Date();
+
+            // ✅ Show demo hint if coming from demo
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('demo') === 'true' || document.referrer.includes('demo.html')) {
+                document.getElementById('demoHint').style.display = 'block';
+            }
+
+            // Check for edit mode
+            const urlParams = new URLSearchParams(window.location.search);
+            invoiceId = urlParams.get('id');
+
+            if (invoiceId) {
+                isEditMode = true;
+                document.getElementById('pageTitle').textContent = 'Edit Purchase Invoice';
+                document.getElementById('submitBtn').textContent = 'UPDATE & SUBMIT';
+                await loadExistingInvoice(invoiceId);
+            } else {
+                // Create mode - add one empty item row
+                addItemRow();
+            }
+        });
+
+        /**
+         * Display user info in navbar
+         */
+        function displayUserInfo() {
+            const userData = getUserData();
+            if (userData) {
+                document.getElementById('userName').textContent = userData.email || 'User';
+                document.getElementById('userRole').textContent = userData.userRole || 'admin';
+            }
+        }
+
+                /**
+         * Load suppliers dropdown
+         */
+        async function loadSuppliers() {
+            try {
+                const response = await apiGet('/suppliers/simple');
+                const suppliers = response.data || [];
+                
+                const select = document.getElementById('supplierId');
+                suppliers.forEach(supplier => {
+                    const option = document.createElement('option');
+                    option.value = supplier._id;
+                    option.textContent = supplier.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.log('Failed to load suppliers:', error.message);
+            }
+        }
+
+        /**
+         * Load items dropdown
+         */
+        async function loadItemsDropdown(selectElement) {
+            try {
+                const response = await apiGet('/items/simple');
+                const items = response.data || [];
+                
+                items.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item._id;
+                    option.textContent = `${item.name} (Stock: ${item.currentStock})`;
+                    option.dataset.name = item.name;
+                    selectElement.appendChild(option);
+                });
+            } catch (error) {
+                console.log('Failed to load items:', error.message);
+            }
+        }
+
+        /**
+         * Update item name when dropdown changes
+         */
+        function updateItemName(selectElement) {
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            const itemName = selectedOption.dataset.name || '';
+            selectElement.parentElement.querySelector('.item-name').value = itemName;
+            calculateTotals();
+        }
+
+        /**
+         * Load existing invoice for editing
+         */
+        async function loadExistingInvoice(id) {
+            try {
+                clearError('errorMessage');
+                const response = await apiGet(`/purchase/${id}`);
+
+                if (!response.data) {
+                    throw new Error('Invoice not found');
+                }
+
+                const invoice = response.data;
+
+                // Populate supplier
+                document.getElementById('supplierId').value = invoice.supplierId || '';
+                document.getElementById('purchaseDate').value = invoice.date ? 
+                    new Date(invoice.date).toISOString().split('T')[0] : 
+                    new Date().toISOString().split('T')[0];
+
+                // Clear and populate items
+                document.getElementById('itemsBody').innerHTML = '';
+                itemCount = 0;
+                if (invoice.items && invoice.items.length > 0) {
+                    invoice.items.forEach(item => {
+                        addItemRow(item.itemId, item.itemName, item.quantity, item.rate);
+                    });
+                } else {
+                    addItemRow();
+                }
+
+                // Clear and populate charges
+                document.getElementById('chargesBody').innerHTML = '';
+                chargeCount = 0;
+                if (invoice.charges && invoice.charges.length > 0) {
+                    invoice.charges.forEach(charge => {
+                        addChargeRow(charge.description, charge.amount);
+                    });
+                }
+
+                // Calculate totals
+                calculateTotals();
+            } catch (error) {
+                handleApiError(error, 'errorMessage');
+                setTimeout(() => goBack(), 2000);
+            }
+        }
+
+                /**
+         * Add a new item row
+         */
+        function addItemRow(itemId = '', itemName = '', quantity = '', rate = '') {
+            const tbody = document.getElementById('itemsBody');
+            const rowId = `item-${itemCount++}`;
+
+            const row = document.createElement('tr');
+            row.id = rowId;
+            row.innerHTML = `
+                                <td>
+                                    <select class="item-input item-id" onchange="updateItemName(this)">
+                                        <option value="">Select Item</option>
+                                        ${itemId ? `<option value="${itemId}" selected>${itemName}</option>` : ''}
+                                    </select>
+                                    <input type="hidden" class="item-name" value="${itemName}">
+                                </td>
+                                <td>
+                                    <input type="number" class="item-input item-qty" placeholder="0" 
+                                           value="${quantity}" min="1" step="0.01">
+                                </td>
+                                <td>
+                                    <input type="number" class="item-input item-rate" placeholder="0.00" 
+                                           value="${rate}" min="0" step="0.01">
+                                </td>
+                <td>
+                    <span class="item-amount">₹0.00</span>
+                </td>
+                <td>
+                    <button class="btn btn-danger btn-small" onclick="removeItemRow('${rowId}')">
+                        DELETE
+                    </button>
+                </td>
+            `;
+
+                        // Add event listeners for calculation
+            row.querySelector('.item-qty').addEventListener('input', calculateTotals);
+            row.querySelector('.item-rate').addEventListener('input', calculateTotals);
+            
+            // Load items dropdown
+            loadItemsDropdown(row.querySelector('.item-id'));
+
+            tbody.appendChild(row);
+            calculateTotals();
+        }
+
+        /**
+         * Remove item row
+         */
+        function removeItemRow(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) {
+                // Ensure at least one item remains
+                const itemCount = document.querySelectorAll('#itemsBody tr').length;
+                if (itemCount <= 1) {
+                    alert('At least one item is required');
+                    return;
+                }
+                row.remove();
+                calculateTotals();
+            }
+        }
+
+        /**
+         * Add a new charge row
+         */
+        function addChargeRow(description = '', amount = '') {
+            const tbody = document.getElementById('chargesBody');
+            const rowId = `charge-${chargeCount++}`;
+
+            const row = document.createElement('tr');
+            row.id = rowId;
+            row.innerHTML = `
+                <td>
+                    <input type="text" class="item-input charge-desc" placeholder="e.g., Shipping, Packaging, Tax" 
+                           value="${description}">
+                </td>
+                <td>
+                    <input type="number" class="item-input charge-amount" placeholder="0.00" 
+                           value="${amount}" min="0" step="0.01">
+                </td>
+                <td>
+                    <button class="btn btn-danger btn-small" onclick="removeChargeRow('${rowId}')">
+                        DELETE
+                    </button>
+                </td>
+            `;
+
+            // Add event listener for calculation
+            row.querySelector('.charge-amount').addEventListener('input', calculateTotals);
+
+            tbody.appendChild(row);
+            calculateTotals();
+        }
+
+        /**
+         * Remove charge row
+         */
+        function removeChargeRow(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) {
+                row.remove();
+                calculateTotals();
+            }
+        }
+
+        /**
+         * Calculate totals on input change
+         */
+                function calculateTotals() {
+            // Calculate item subtotal
+            let subtotal = 0;
+            document.querySelectorAll('#itemsBody tr').forEach(row => {
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
+                const amount = qty * rate;
+                row.querySelector('.item-amount').textContent = `₹${amount.toFixed(2)}`;
+                subtotal += amount;
+            });
+
+            // Calculate charges total
+            let chargesTotal = 0;
+            document.querySelectorAll('#chargesBody tr').forEach(row => {
+                const amount = parseFloat(row.querySelector('.charge-amount').value) || 0;
+                chargesTotal += amount;
+            });
+
+            // Calculate grand total
+            const grandTotal = subtotal + chargesTotal;
+
+            // Update display
+            document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+            document.getElementById('chargesTotal').textContent = chargesTotal.toFixed(2);
+            document.getElementById('grandTotal').textContent = grandTotal.toFixed(2);
+        }
+
+        /**
+         * Validate form before submission
+         */
+                function validateForm() {
+            const supplierId = document.getElementById('supplierId').value;
+            const purchaseDate = document.getElementById('purchaseDate').value;
+
+            if (!supplierId) {
+                showError('Supplier is required');
+                return false;
+            }
+
+            if (!purchaseDate) {
+                showError('Purchase date is required');
+                return false;
+            }
+
+            // Validate at least one item exists with quantity and rate
+            let hasValidItem = false;
+            document.querySelectorAll('#itemsBody tr').forEach(row => {
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
+                const itemId = row.querySelector('.item-id').value;
+
+                if (itemId && qty > 0 && rate > 0) {
+                    hasValidItem = true;
+                }
+            });
+
+            if (!hasValidItem) {
+                showError('At least one item with quantity and rate is required');
+                return false;
+            }
+
+            return true;
+        }
+
+        /**
+         * Show error message
+         */
+        function showError(message) {
+            clearError('errorMessage');
+            const container = document.getElementById('errorMessage');
+            container.querySelector('.message-content').textContent = message;
+            container.classList.add('show');
+            container.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        /**
+         * Submit form (create or update)
+         */
+        async function submitForm() {
+            try {
+                // Validate
+                if (!validateForm()) {
+                    return;
+                }
+
+                clearError('errorMessage');
+                document.getElementById('submitBtn').disabled = true;
+
+                                // Build request body
+                const items = [];
+                document.querySelectorAll('#itemsBody tr').forEach(row => {
+                    const itemId = row.querySelector('.item-id').value;
+                    const itemName = row.querySelector('.item-name').value.trim();
+                    const quantity = parseFloat(row.querySelector('.item-qty').value) || 0;
+                    const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
+
+                    if (itemId && quantity > 0 && rate > 0) {
+                        items.push({
+                            itemId,
+                            itemName,
+                            quantity,
+                            rate,
+                            amount: quantity * rate
+                        });
+                    }
+                });
+
+                const charges = [];
+                document.querySelectorAll('#chargesBody tr').forEach(row => {
+                    const description = row.querySelector('.charge-desc').value.trim();
+                    const amount = parseFloat(row.querySelector('.charge-amount').value) || 0;
+
+                    if (description && amount > 0) {
+                        charges.push({
+                            description,
+                            amount
+                        });
+                    }
+                });
+
+                const requestData = {
+                    supplierId: document.getElementById('supplierId').value,
+                    date: document.getElementById('purchaseDate').value,
+                    items,
+                    charges,
+                    totalAmount: parseFloat(document.getElementById('grandTotal').textContent) || 0
+                };
+
+                let response;
+                if (isEditMode && invoiceId) {
+                    // Update existing
+                    response = await apiPut(`/purchase/${invoiceId}`, requestData);
+                    showSuccessMessage('Purchase invoice updated successfully', 'successMessage');
+                } else {
+                    // Create new
+                    response = await apiPost('/purchase', requestData);
+                    showSuccessMessage('Purchase invoice created successfully', 'successMessage');
+                }
+
+                // Redirect to list after 1.5 seconds
+                setTimeout(() => {
+                    window.location.href = 'purchase-list.html';
+                }, 1500);
+
+            } catch (error) {
+                document.getElementById('submitBtn').disabled = false;
+                handleApiError(error, 'errorMessage');
+            }
+        }
+
+        /**
+         * Go back to purchase list
+         */
+        function goBack() {
+            window.location.href = 'purchase-list.html';
+        }
+    </script>
+</body>
+</html>

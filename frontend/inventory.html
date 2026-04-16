@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Inventory | ErpBuddy</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      background: #f8f9fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .navbar {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .navbar-brand {
+      font-weight: 700;
+      font-size: 24px;
+      letter-spacing: 0.5px;
+    }
+    .stock-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      margin-bottom: 24px;
+      padding: 24px;
+      transition: all 0.3s ease;
+    }
+    .stock-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      transform: translateY(-2px);
+    }
+    .filter-section {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    .table-container {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    .table {
+      margin: 0;
+    }
+    .table thead {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .table-hover tbody tr:hover {
+      background: #f5f5f5;
+      cursor: pointer;
+    }
+    .badge-low-stock {
+      background: #dc3545;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-in-stock {
+      background: #28a745;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-discontinued {
+      background: #6c757d;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .btn-group-sm .btn {
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+    .stats-box {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .stats-box h4 {
+      margin: 0;
+      font-weight: 700;
+    }
+    .stats-box p {
+      margin: 4px 0 0 0;
+      font-size: 12px;
+      opacity: 0.9;
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+    }
+    .error-box {
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+    }
+    .success-box {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+    }
+    .input-group input, .input-group select {
+      border-color: #ddd;
+    }
+    .input-group input:focus, .input-group select:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    .btn-primary {
+      background: #667eea;
+      border-color: #667eea;
+    }
+    .btn-primary:hover {
+      background: #5568d3;
+      border-color: #5568d3;
+    }
+    .btn-secondary {
+      background: #6c757d;
+      border-color: #6c757d;
+    }
+    .btn-secondary:hover {
+      background: #5a6268;
+      border-color: #5a6268;
+    }
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 8px;
+    }
+    .page-subtitle {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 24px;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark">
+  <div class="container">
+    <a class="navbar-brand" href="dashboard.html">📦 ErpBuddy</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link active" href="inventory.html">Stock Inventory</a></li>
+        <li class="nav-item"><a class="nav-link" href="javascript:logout()">Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-5 mb-5">
+  
+  <!-- Page Title -->
+  <div class="mb-4">
+    <h1 class="page-title">📦 Stock Inventory</h1>
+    <p class="page-subtitle">Real-time stock tracking by warehouse and batch</p>
+  </div>
+
+  <!-- Summary Stats -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="stats-box">
+        <h4 id="totalItems">0</h4>
+        <p>Items in Stock</p>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stats-box">
+        <h4 id="totalWarehouses">0</h4>
+        <p>Active Warehouses</p>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stats-box">
+        <h4 id="totalStockValue">₹0</h4>
+        <p>Total Stock Value</p>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stats-box">
+        <h4 id="lowStockCount">0</h4>
+        <p>Low Stock Items</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div id="messages"></div>
+
+  <!-- Filter Section -->
+  <div class="filter-section">
+    <div class="row">
+      <div class="col-md-3 mb-2">
+        <label class="form-label" style="text-align: right; display: block; margin-bottom: 4px;">Warehouse:</label>
+        <select id="warehouseFilter" class="form-control form-control-sm">
+          <option value="">All Warehouses</option>
+        </select>
+      </div>
+      <div class="col-md-3 mb-2">
+        <label class="form-label" style="text-align: right; display: block; margin-bottom: 4px;">Item:</label>
+        <input type="text" id="itemFilter" class="form-control form-control-sm" placeholder="Search item name/SKU...">
+      </div>
+      <div class="col-md-3 mb-2">
+        <label class="form-label" style="text-align: right; display: block; margin-bottom: 4px;">Status:</label>
+        <select id="statusFilter" class="form-control form-control-sm">
+          <option value="">All Status</option>
+          <option value="ACTIVE">Active</option>
+          <option value="LOW_STOCK">Low Stock</option>
+          <option value="DISCONTINUED">Discontinued</option>
+        </select>
+      </div>
+      <div class="col-md-3 mb-2">
+        <label class="form-label" style="text-align: right; display: block; margin-bottom: 4px;">&nbsp;</label>
+        <div class="btn-group w-100" role="group">
+          <button type="button" class="btn btn-sm btn-primary" onclick="applyFilters()">APPLY</button>
+          <button type="button" class="btn btn-sm btn-secondary" onclick="resetFilters()">RESET</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="mb-3">
+    <button class="btn btn-sm btn-success" onclick="exportToCSV()">📥 CSV Export</button>
+    <button class="btn btn-sm btn-info" onclick="window.print()">🖨️ Print</button>
+  </div>
+
+  <!-- Stock Table -->
+  <div class="table-container">
+    <table class="table table-hover" id="stockTable">
+      <thead>
+        <tr>
+          <th style="width: 20%;">Item (SKU)</th>
+          <th style="width: 15%;">Warehouse</th>
+          <th style="width: 10%;">Batch No</th>
+          <th style="width: 10%; text-align: right;">Qty</th>
+          <th style="width: 12%; text-align: right;">Cost Price</th>
+          <th style="width: 13%; text-align: right;">Total Value</th>
+          <th style="width: 10%;">Status</th>
+          <th style="width: 10%;">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="stockTableBody">
+        <tr>
+          <td colspan="8" class="text-center py-4">
+            <span class="loading">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              Loading stock data...
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div id="noResults" style="display: none; text-align: center; padding: 40px;">
+      <p>No stock records found</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="api.js"></script>
+<script src="auth.js"></script>
+
+<script>
+  let allStockData = [];
+
+  /**
+   * Load stock data on page load
+   */
+  async function loadInventory() {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Load stock data
+      const response = await fetch('/api/inventory/stock-balance', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load stock data');
+      }
+
+      const result = await response.json();
+      allStockData = result.data.items || [];
+
+      // Populate warehouse filter
+      const warehouses = [...new Set(allStockData.map(item => item.warehouseId?._id))];
+      const warehouseSelect = document.getElementById('warehouseFilter');
+      warehouseSelect.innerHTML = '<option value="">All Warehouses</option>';
+      
+      const warehouseNames = {};
+      allStockData.forEach(item => {
+        if (item.warehouseId) {
+          warehouseNames[item.warehouseId._id] = item.warehouseId.name;
+        }
+      });
+
+      Object.entries(warehouseNames).forEach(([id, name]) => {
+        const option = document.createElement('option');
+        option.value = id;
+        option.textContent = name;
+        warehouseSelect.appendChild(option);
+      });
+
+      // Calculate stats
+      updateStats();
+
+      // Display stock
+      displayStock();
+
+    } catch (error) {
+      showMessage(`Error loading inventory: ${error.message}`, 'error');
+    }
+  }
+
+  /**
+   * Display stock table
+   */
+  function displayStock() {
+    const tbody = document.getElementById('stockTableBody');
+    const noResults = document.getElementById('noResults');
+
+    if (allStockData.length === 0) {
+      tbody.innerHTML = '';
+      noResults.style.display = 'block';
+      return;
+    }
+
+    noResults.style.display = 'none';
+    tbody.innerHTML = allStockData.map(item => {
+      const status = getStatus(item);
+      const statusBadge = getStatusBadge(status);
+      const itemName = item.itemId?.name || 'Unknown';
+      const itemSku = item.itemId?.sku || '-';
+      const warehouseName = item.warehouseId?.name || 'Unknown';
+      const batch = item.batchNo || '-';
+      const qty = item.quantity.toFixed(2);
+      const costPrice = item.costPrice.toFixed(2);
+      const totalValue = item.totalCostValue.toFixed(2);
+
+      return `
+        <tr>
+          <td><strong>${itemName}</strong><br><small>${itemSku}</small></td>
+          <td>${warehouseName}</td>
+          <td>${batch}</td>
+          <td style="text-align: right;">${qty}</td>
+          <td style="text-align: right;">₹${costPrice}</td>
+          <td style="text-align: right;"><strong>₹${totalValue}</strong></td>
+          <td>${statusBadge}</td>
+          <td>
+            <button class="btn btn-xs btn-info" onclick="viewDetails('${item._id}')" title="View Details">👁️</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  /**
+   * Get status of stock item
+   */
+  function getStatus(item) {
+    if (item.status === 'DISCONTINUED') {
+      return 'DISCONTINUED';
+    }
+    if (item.quantity < item.reorderLevel) {
+      return 'LOW_STOCK';
+    }
+    return 'IN_STOCK';
+  }
+
+  /**
+   * Get status badge HTML
+   */
+  function getStatusBadge(status) {
+    const badges = {
+      'LOW_STOCK': '<span class="badge-low-stock">⚠️ Low Stock</span>',
+      'IN_STOCK': '<span class="badge-in-stock">✓ In Stock</span>',
+      'DISCONTINUED': '<span class="badge-discontinued">✗ Discontinued</span>'
+    };
+    return badges[status] || badges['IN_STOCK'];
+  }
+
+  /**
+   * Apply filters
+   */
+  function applyFilters() {
+    const warehouseId = document.getElementById('warehouseFilter').value;
+    const itemSearch = document.getElementById('itemFilter').value.toLowerCase();
+    const status = document.getElementById('statusFilter').value;
+
+    let filtered = allStockData.filter(item => {
+      // Warehouse filter
+      if (warehouseId && item.warehouseId?._id !== warehouseId) {
+        return false;
+      }
+
+      // Item search
+      if (itemSearch) {
+        const itemName = (item.itemId?.name || '').toLowerCase();
+        const itemSku = (item.itemId?.sku || '').toLowerCase();
+        if (!itemName.includes(itemSearch) && !itemSku.includes(itemSearch)) {
+          return false;
+        }
+      }
+
+      // Status filter
+      if (status) {
+        const itemStatus = getStatus(item);
+        if (itemStatus !== status) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    allStockData = filtered;
+    displayStock();
+  }
+
+  /**
+   * Reset filters
+   */
+  function resetFilters() {
+    document.getElementById('warehouseFilter').value = '';
+    document.getElementById('itemFilter').value = '';
+    document.getElementById('statusFilter').value = '';
+    loadInventory();
+  }
+
+  /**
+   * Update statistics
+   */
+  function updateStats() {
+    const uniqueItems = new Set(allStockData.map(item => item.itemId?._id)).size;
+    const uniqueWarehouses = new Set(allStockData.map(item => item.warehouseId?._id)).size;
+    const totalValue = allStockData.reduce((sum, item) => sum + item.totalCostValue, 0);
+    const lowStock = allStockData.filter(item => item.quantity < item.reorderLevel).length;
+
+    document.getElementById('totalItems').textContent = uniqueItems;
+    document.getElementById('totalWarehouses').textContent = uniqueWarehouses;
+    document.getElementById('totalStockValue').textContent = `₹${totalValue.toFixed(2)}`;
+    document.getElementById('lowStockCount').textContent = lowStock;
+  }
+
+  /**
+   * View details of a stock item
+   */
+  function viewDetails(stockId) {
+    const item = allStockData.find(s => s._id === stockId);
+    if (item) {
+      alert(`
+Item: ${item.itemId?.name}
+SKU: ${item.itemId?.sku}
+Warehouse: ${item.warehouseId?.name}
+Batch: ${item.batchNo || 'N/A'}
+Quantity: ${item.quantity}
+Cost Price: ₹${item.costPrice.toFixed(2)}
+Total Value: ₹${item.totalCostValue.toFixed(2)}
+Reorder Level: ${item.reorderLevel}
+Max Level: ${item.maxStockLevel}
+Last Moved: ${new Date(item.lastMovedAt).toLocaleString()}
+      `);
+    }
+  }
+
+  /**
+   * Export to CSV
+   */
+  function exportToCSV() {
+    if (allStockData.length === 0) {
+      showMessage('No data to export', 'error');
+      return;
+    }
+
+    const headers = ['Item', 'SKU', 'Warehouse', 'Batch No', 'Quantity', 'Cost Price', 'Total Value', 'Status'];
+    const rows = allStockData.map(item => [
+      item.itemId?.name || 'Unknown',
+      item.itemId?.sku || '-',
+      item.warehouseId?.name || 'Unknown',
+      item.batchNo || '-',
+      item.quantity.toFixed(2),
+      item.costPrice.toFixed(2),
+      item.totalCostValue.toFixed(2),
+      getStatus(item)
+    ]);
+
+    let csv = headers.join(',') + '\n';
+    rows.forEach(row => {
+      csv += row.map(cell => `"${cell}"`).join(',') + '\n';
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `inventory-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+
+    showMessage('CSV exported successfully', 'success');
+  }
+
+  /**
+   * Show message
+   */
+  function showMessage(message, type) {
+    const messagesDiv = document.getElementById('messages');
+    const messageClass = type === 'error' ? 'error-box' : 'success-box';
+    const messageHtml = `<div class="${messageClass}">${message}</div>`;
+    messagesDiv.innerHTML = messageHtml;
+    setTimeout(() => {
+      messagesDiv.innerHTML = '';
+    }, 5000);
+  }
+
+  /**
+   * Logout
+   */
+  function logout() {
+    localStorage.removeItem('authToken');
+    window.location.href = 'login.html';
+  }
+
+  // Load inventory on page load
+  document.addEventListener('DOMContentLoaded', loadInventory);
+</script>
+
+</body>
+</html>

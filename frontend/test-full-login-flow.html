@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full Login Flow Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .container {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .log {
+            background: #333;
+            color: #fff;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .step {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        .step h3 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Full Login Flow Test</h1>
+    
+    <div class="container">
+        <div class="step">
+            <h3>Step 1: Test Backend API</h3>
+            <p>Check if backend is running and accessible.</p>
+            <button onclick="testBackend()">Test Backend</button>
+            <div id="backendResult"></div>
+        </div>
+        
+        <div class="step">
+            <h3>Step 2: Test Login API</h3>
+            <p>Test login with demo credentials.</p>
+            <button onclick="testLogin()">Test Login API</button>
+            <div id="loginResult"></div>
+        </div>
+        
+        <div class="step">
+            <h3>Step 3: Test Frontend Login Function</h3>
+            <p>Test the login() function from auth.js.</p>
+            <button onclick="testFrontendLogin()">Test Frontend Login</button>
+            <div id="frontendLoginResult"></div>
+        </div>
+        
+        <div class="step">
+            <h3>Step 4: Test LocalStorage</h3>
+            <p>Check if token is stored in localStorage.</p>
+            <button onclick="testLocalStorage()">Test LocalStorage</button>
+            <div id="localStorageResult"></div>
+        </div>
+        
+        <div class="step">
+            <h3>Step 5: Test Protected Endpoint</h3>
+            <p>Test accessing a protected endpoint with token.</p>
+            <button onclick="testProtectedEndpoint()">Test Protected Endpoint</button>
+            <div id="protectedResult"></div>
+        </div>
+        
+        <div class="step">
+            <h3>Step 6: Test Dashboard Access</h3>
+            <p>Simulate dashboard page load.</p>
+            <button onclick="testDashboard()">Test Dashboard</button>
+            <div id="dashboardResult"></div>
+        </div>
+        
+        <h3>Console Log</h3>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        const logElement = document.getElementById('log');
+        
+        function log(message, className = '') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span class="${className}">[${timestamp}] ${message}</span>`;
+            logElement.appendChild(logEntry);
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        function clearResult(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+        
+        function showResult(elementId, message, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="${isSuccess ? 'success' : 'error'}">${message}</div>`;
+        }
+        
+        async function testBackend() {
+            clearResult('backendResult');
+            log('Testing backend API...', 'warning');
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/test');
+                const text = await response.text();
+                
+                if (response.ok) {
+                    log('✅ Backend is running: ' + text, 'success');
+                    showResult('backendResult', '✅ Backend is running on http://localhost:5000', true);
+                } else {
+                    log('❌ Backend returned error: ' + response.status, 'error');
+                    showResult('backendResult', '❌ Backend error: ' + response.status, false);
+                }
+            } catch (error) {
+                log('❌ Cannot connect to backend: ' + error.message, 'error');
+                showResult('backendResult', '❌ Cannot connect to backend. Make sure it\'s running on http://localhost:5000', false);
+            }
+        }
+        
+        async function testLogin() {
+            clearResult('loginResult');
+            log('Testing login API directly...', 'warning');
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'user@company.local',
+                        password: 'password123'
+                    }),
+                });
+                
+                const data = await response.json();
+                log(`Login API response: ${JSON.stringify(data, null, 2)}`, '');
+                
+                if (response.ok && data.success) {
+                    log('✅ Login API works! Token generated.', 'success');
+                    showResult('loginResult', '✅ Login API works! Token generated.', true);
+                } else {
+                    log('❌ Login API failed: ' + (data.error || 'Unknown error'), 'error');
+                    showResult('loginResult', '❌ Login API failed: ' + (data.error || 'Unknown error'), false);
+                }
+            } catch (error) {
+                log('❌ Login API error: ' + error.message, 'error');
+                showResult('loginResult', '❌ Login API error: ' + error.message, false);
+            }
+        }
+        
+        async function testFrontendLogin() {
+            clearResult('frontendLoginResult');
+            log('Testing frontend login() function...', 'warning');
+            
+            try {
+                // Call the login function from auth.js
+                const result = await login('user@company.local', 'password123');
+                log(`Frontend login result: ${JSON.stringify(result, null, 2)}`, '');
+                
+                if (result.success) {
+                    log('✅ Frontend login() function works!', 'success');
+                    showResult('frontendLoginResult', '✅ Frontend login() function works!', true);
+                } else {
+                    log('❌ Frontend login() failed: ' + result.error, 'error');
+                    showResult('frontendLoginResult', '❌ Frontend login() failed: ' + result.error, false);
+                }
+            } catch (error) {
+                log('❌ Frontend login() error: ' + error.message, 'error');
+                showResult('frontendLoginResult', '❌ Frontend login() error: ' + error.message, false);
+            }
+        }
+        
+        function testLocalStorage() {
+            clearResult('localStorageResult');
+            log('Checking localStorage...', 'warning');
+            
+            const token = localStorage.getItem('auth_token');
+            const userData = localStorage.getItem('user_data');
+            
+            if (token) {
+                log(`✅ Token found in localStorage (${token.length} chars)`, 'success');
+                log(`Token: ${token.substring(0, 50)}...`, '');
+            } else {
+                log('❌ No token in localStorage', 'error');
+            }
+            
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    log(`✅ User data found: ${user.email}`, 'success');
+                } catch (e) {
+                    log('❌ Invalid user data in localStorage: ' + e.message, 'error');
+                }
+            } else {
+                log('❌ No user data in localStorage', 'error');
+            }
+            
+            if (token && userData) {
+                showResult('localStorageResult', '✅ Token and user data stored in localStorage', true);
+            } else {
+                showResult('localStorageResult', '❌ Missing data in localStorage', false);
+            }
+        }
+        
+        async function testProtectedEndpoint() {
+            clearResult('protectedResult');
+            log('Testing protected endpoint /api/auth/me...', 'warning');
+            
+            const token = localStorage.getItem('auth_token');
+            
+            if (!token) {
+                log('❌ No token available for protected endpoint test', 'error');
+                showResult('protectedResult', '❌ No token available. Run login tests first.', false);
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                log(`Protected endpoint response: ${JSON.stringify(data, null, 2)}`, '');
+                
+                if (response.ok && data.success) {
+                    log('✅ Protected endpoint works!', 'success');
+                    showResult('protectedResult', '✅ Protected endpoint /api/auth/me works!', true);
+                } else {
+                    log('❌ Protected endpoint failed: ' + (data.error || 'Unknown error'), 'error');
+                    showResult('protectedResult', '❌ Protected endpoint failed: ' + (data.error || 'Unknown error'), false);
+                }
+            } catch (error) {
+                log('❌ Protected endpoint error: ' + error.message, 'error');
+                showResult('protectedResult', '❌ Protected endpoint error: ' + error.message, false);
+            }
+        }
+        
+        function testDashboard() {
+            clearResult('dashboardResult');
+            log('Testing dashboard simulation...', 'warning');
+            
+            // Check authentication
+            if (!isAuthenticated()) {
+                log('❌ isAuthenticated() returns false', 'error');
+                showResult('dashboardResult', '❌ User is not authenticated', false);
+                return;
+            }
+            
+            log('✅ isAuthenticated() returns true', 'success');
+            
+            // Get user data
+            const user = getUserData();
+            if (!user) {
+                log('❌ getUserData() returns null', 'error');
+                showResult('dashboardResult', '❌ No user data available', false);
+                return;
+            }
+            
+            log(`✅ getUserData() returns user: ${user.email}`, 'success');
+            
+            // Get user role
+            const role = getUserRole();
+            log(`✅ getUserRole() returns: ${role}`, 'success');
+            
+            // Get company ID
+            const companyId = getCompanyId();
+            log(`✅ getCompanyId() returns: ${companyId}`, 'success');
+            
+            showResult('dashboardResult', '✅ Dashboard simulation successful! All auth functions work.', true);
+        }
+        
+        // Initial log
+        log('Ready to test login flow. Start with Step 1.', 'warning');
+        log('Make sure backend is running on http://localhost:5000', 'warning');
+    </script>
+</body>
+</html>

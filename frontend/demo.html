@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ErpBuddy - Interactive Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .demo-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .demo-header {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .demo-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .demo-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .demo-content {
+            padding: 40px;
+        }
+
+        .demo-intro {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            border-left: 4px solid #667eea;
+        }
+
+        .demo-intro h2 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .demo-intro p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .demo-scenario {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .scenario-box {
+            background: #fff9e6;
+            border: 2px solid #ff9800;
+            border-radius: 4px;
+            padding: 20px;
+        }
+
+        .scenario-box h3 {
+            color: #e65100;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .scenario-box p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .demo-steps {
+            display: grid;
+            gap: 20px;
+        }
+
+        .step {
+            background: white;
+            border: 2px solid #eee;
+            border-radius: 4px;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .step:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .step-header h3 {
+            color: #333;
+            font-size: 1.3rem;
+            margin: 0;
+        }
+
+        .step-content {
+            margin-left: 55px;
+        }
+
+        .step-description {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .step-highlight {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 2px;
+            font-size: 0.95rem;
+            color: #1565c0;
+        }
+
+        .step-data {
+            background: #f5f5f5;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .step-action {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .btn-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #45a049;
+        }
+
+        .demo-results {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+            border-radius: 4px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .demo-results h3 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .result-item {
+            background: white;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            border-radius: 2px;
+        }
+
+        .result-label {
+            font-size: 0.85rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-top: 5px;
+        }
+
+        .demo-footer {
+            background: #f5f5f5;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #eee;
+        }
+
+        .demo-footer h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .demo-footer p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-success {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .status-info {
+            background: #bbdefb;
+            color: #1565c0;
+        }
+
+        @media (max-width: 768px) {
+            .demo-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .demo-content {
+                padding: 20px;
+            }
+
+            .step-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .step-content {
+                margin-left: 0;
+            }
+
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <!-- Header -->
+        <div class="demo-header">
+            <h1>🚀 ErpBuddy Interactive Demo</h1>
+            <p>Complete Business Flow: Purchase → Sales → Profit → Reports</p>
+        </div>
+
+        <!-- Content -->
+        <div class="demo-content">
+            <!-- Introduction -->
+            <div class="demo-intro">
+                <h2>Welcome to the ErpBuddy Demo</h2>
+                <p>
+                    This guided walkthrough will show you how ErpBuddy handles complete business transactions:
+                    from purchasing inventory through creating sales and seeing profits in real time.
+                </p>
+                <p style="margin: 0;">
+                    Follow each step below to understand the entire flow. It takes about 5-10 minutes.
+                </p>
+            </div>
+
+            <!-- Demo Scenario -->
+            <div class="demo-scenario">
+                <div class="scenario-box">
+                    <h3>📦 Demo Scenario</h3>
+                    <p><strong>Product:</strong> Super Basmati Rice (Premium Grade)</p>
+                    <p><strong>Purchase:</strong> 100 units @ ₹100/unit = ₹10,000 total cost</p>
+                    <p><strong>Sale:</strong> 20 units @ ₹120/unit = ₹2,400 revenue</p>
+                    <p><strong>Expected Profit:</strong> ₹2,400 - ₹2,000 = ₹400</p>
+                </div>
+            </div>
+
+            <!-- Steps -->
+            <div class="demo-steps">
+                <!-- STEP 1 -->
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-number">1</div>
+                        <h3>Create Purchase Order</h3>
+                    </div>
+                    <div class="step-content">
+                        <p class="step-description">
+                            The first step is purchasing inventory. You'll create a purchase order for 100 units of Super Basmati Rice 
+                            at ₹100 per unit. This establishes your inventory base and records the purchase in the system.
+                        </p>
+                        <div class="step-highlight">
+                            <strong>📌 Key Point:</strong> When you post the purchase, stock increases by 100 units and an Accounts Payable 
+                            entry is created in the general ledger.
+                        </div>
+                        <div class="step-data">
+                            <strong>Sample Data:</strong><br>
+                            Customer: Supplier XYZ<br>
+                            Date: Today<br>
+                            Item: Super Basmati Rice<br>
+                            Qty: 100 | Unit Price: ₹100 | Total: ₹10,000
+                        </div>
+                        <div class="step-action">
+                            <button class="btn btn-primary" onclick="goToPurchaseForm()">
+                                ➕ Create Purchase
+                            </button>
+                            <button class="btn btn-secondary" onclick="scrollToStep(2)">
+                                Skip to Next →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 2 -->
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-number">2</div>
+                        <h3>Check Inventory Balance</h3>
+                    </div>
+                    <div class="step-content">
+                        <p class="step-description">
+                            After posting the purchase, check the inventory system to verify stock was received. 
+                            You should see 100 units of Super Basmati Rice available.
+                        </p>
+                        <div class="step-highlight">
+                            <strong>🔍 What to Look For:</strong> Stock Balance should show: 100 units available, valued at ₹100/unit (FIFO costing)
+                        </div>
+                        <div class="step-data">
+                            <strong>Expected Inventory Entry:</strong><br>
+                            Item: Super Basmati Rice<br>
+                            Available Qty: 100<br>
+                            Cost per Unit: ₹100 (FIFO)<br>
+                            Total Value: ₹10,000
+                        </div>
+                        <div class="step-action">
+                            <button class="btn btn-secondary" onclick="alert('Inventory view coming soon')">
+                                📊 View Inventory (Demo)
+                            </button>
+                            <button class="btn btn-secondary" onclick="scrollToStep(3)">
+                                Continue to Sales →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3 -->
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-number">3</div>
+                        <h3>Create Sales Invoice</h3>
+                    </div>
+                    <div class="step-content">
+                        <p class="step-description">
+                            Now create a sales invoice to a customer. Sell 20 units of Super Basmati Rice at ₹120 per unit. 
+                            The system will automatically calculate profit based on the purchase cost.
+                        </p>
+                        <div class="step-highlight">
+                            <strong>⚡ Automatic Features:</strong><br>
+                            • Stock validation: Ensures 20 units are available (they are!)<br>
+                            • Cost calculation: Uses FIFO method to determine cost = 20 × ₹100 = ₹2,000<br>
+                            • Profit calculation: Revenue ₹2,400 - Cost ₹2,000 = ₹400
+                        </div>
+                        <div class="step-data">
+                            <strong>Sample Data:</strong><br>
+                            Customer: Customer ABC<br>
+                            Date: Today<br>
+                            Item: Super Basmati Rice<br>
+                            Qty: 20 | Unit Price: ₹120 | Total: ₹2,400
+                        </div>
+                        <div class="step-action">
+                            <button class="btn btn-primary" onclick="goToSalesForm()">
+                                💰 Create Sales Invoice
+                            </button>
+                            <button class="btn btn-secondary" onclick="scrollToStep(4)">
+                                Skip to Profit View →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 4 -->
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-number">4</div>
+                        <h3>See Profit Calculation</h3>
+                    </div>
+                    <div class="step-content">
+                        <p class="step-description">
+                            When you submit the sales invoice, the system immediately shows you the profit breakdown. 
+                            This is calculated from:
+                        </p>
+                        <div class="step-highlight">
+                            <strong>📊 Profit Breakdown:</strong><br>
+                            Revenue (Selling Price): ₹2,400<br>
+                            Cost of Goods (FIFO): ₹2,000<br>
+                            ──────────────────<br>
+                            <strong>Profit: ₹400</strong>
+                        </div>
+                        <div class="step-data">
+                            <strong>System Calculations:</strong><br>
+                            • Revenue = 20 units × ₹120/unit = ₹2,400<br>
+                            • Cost = 20 units × ₹100/unit = ₹2,000 (FIFO costing)<br>
+                            • Profit = ₹2,400 - ₹2,000 = ₹400 profit margin on sale
+                        </div>
+                        <div class="step-action">
+                            <button class="btn btn-secondary" onclick="alert('After creating sales, profit displays here for 3 seconds')">
+                                👀 See Profit Display (Demo)
+                            </button>
+                            <button class="btn btn-secondary" onclick="scrollToStep(5)">
+                                Continue to Reports →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 5 -->
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-number">5</div>
+                        <h3>View Reports & Ledger</h3>
+                    </div>
+                    <div class="step-content">
+                        <p class="step-description">
+                            All transactions are automatically recorded in the General Ledger. 
+                            View reports to see the complete financial picture:
+                        </p>
+                        <div class="step-highlight">
+                            <strong>📋 Journal Entries Created:</strong><br>
+                            • Purchase Journal: Credit A/P ₹10,000 | Debit Inventory ₹10,000<br>
+                            • Sale Revenue: Debit A/R ₹2,400 | Credit Sales ₹2,400<br>
+                            • Sale COGS: Debit COGS ₹2,000 | Credit Inventory ₹2,000
+                        </div>
+                        <div class="step-data">
+                            <strong>Final State:</strong><br>
+                            • Inventory: 100 - 20 = 80 units remaining<br>
+                            • GL: All debits = all credits (balanced)<br>
+                            • P&L: Sales ₹2,400 - COGS ₹2,000 = Profit ₹400
+                        </div>
+                        <div class="step-action">
+                            <button class="btn btn-primary" onclick="goToGeneralLedger()">
+                                📔 View General Ledger
+                            </button>
+                            <button class="btn btn-secondary" onclick="goToReports()">
+                                📊 View Profit & Loss Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Summary -->
+            <div class="demo-results">
+                <h3>✅ Demo Complete - Results Summary</h3>
+                <div class="result-grid">
+                    <div class="result-item">
+                        <div class="result-label">Purchase Amount</div>
+                        <div class="result-value">₹10,000</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Sales Revenue</div>
+                        <div class="result-value">₹2,400</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">COGS (Cost)</div>
+                        <div class="result-value">₹2,000</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Profit</div>
+                        <div class="result-value" style="color: #4caf50;">₹400</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Remaining Stock</div>
+                        <div class="result-value">80 units</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">GL Status</div>
+                        <div class="result-value" style="color: #4caf50;">✅ Balanced</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="demo-footer">
+            <h3>🎉 You've Completed the ErpBuddy Demo!</h3>
+            <p>
+                You've seen how ErpBuddy handles complete business transactions with automated profit calculation,
+                stock management, and full accounting integration.
+            </p>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="window.location.href='dashboard.html'">
+                    ← Back to Dashboard
+                </button>
+                <button class="btn btn-success" onclick="startDemo()">
+                    🔄 Start Demo Again
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        /**
+         * Verify user is authenticated
+         */
+        if (!isAuthenticated()) {
+            window.location.replace('login.html');
+        }
+
+        /**
+         * Navigate to purchase form
+         */
+        function goToPurchaseForm() {
+            alert('📝 Opening Purchase Form\n\nPlease fill:\n• Vendor: Supplier XYZ\n• Item: Super Basmati Rice\n• Qty: 100\n• Price: ₹100');
+            window.location.href = 'purchase-form.html?demo=true';
+        }
+
+        /**
+         * Navigate to sales form
+         */
+        function goToSalesForm() {
+            alert('📝 Opening Sales Form\n\nPlease fill:\n• Customer: Customer ABC\n• Item: Super Basmati Rice\n• Qty: 20\n• Price: ₹120\n\nProfit will show as ₹400!');
+            window.location.href = 'sales-form.html?demo=true';
+        }
+
+        /**
+         * Navigate to ledger
+         */
+        function goToGeneralLedger() {
+            window.location.href = 'ledger.html';
+        }
+
+        /**
+         * Navigate to reports
+         */
+        function goToReports() {
+            window.location.href = 'profit-loss.html';
+        }
+
+        /**
+         * Scroll to specific step
+         */
+        function scrollToStep(stepNumber) {
+            const steps = document.querySelectorAll('.step');
+            if (steps[stepNumber - 1]) {
+                steps[stepNumber - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        /**
+         * Start demo from beginning
+         */
+        function startDemo() {
+            scrollToStep(1);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        console.log('✅ Demo page loaded successfully');
+    </script>
+</body>
+</html>
