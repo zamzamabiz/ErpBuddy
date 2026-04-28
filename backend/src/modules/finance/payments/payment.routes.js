@@ -2,7 +2,7 @@ const express = require('express');
 const paymentController = require('./payment.controller');
 const authMiddleware = require('../../../middleware/auth.middleware');
 const rbacMiddleware = require('../../../middleware/rbac.middleware');
-const periodLock = require('../../../middlewares/periodLock.middleware');
+const periodLock = require('../../../middleware/periodLock.middleware');
 
 const router = express.Router();
 

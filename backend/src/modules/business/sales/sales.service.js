@@ -12,6 +12,9 @@ const Item = require("@modules/item/item.model");
 // ✅ 🔷 ACCOUNT MASTER (for journal posting validation)
 const Account = require("@modules/accounting/accounts/account.model");
 
+// ✅ 🔷 INVENTORY ENGINE (for weighted average cost)
+const inventoryTransactionService = require("@modules/engines/inventoryEngine/inventoryTransaction.service");
+
 /**
  * 🔷 CREATE SALES
  */
@@ -239,34 +242,47 @@ async function postSales(salesId, tenantId, userId) {
       throw err;
     }
 
-    // ✅ STEP 2B: Calculate COGS using Item-Level Costing Strategy & Create Stock Ledger Entries (Inventory OUT)
+    // ✅ STEP 2B: Calculate COGS using Weighted Average Cost (Inventory Engine) & Create Stock Ledger Entries
     let totalCOGS = 0;
+    let totalExpenses = 0;
     try {
       for (const item of validatedItems) {
-        // 🎯 Use item-specific costing method
-        const costingMethod = item.costingMethod || 'FIFO';
-        console.log(`\n📦 Item ${item.item}: Processing ${costingMethod}...`);
+        // 🎯 Use inventory engine for weighted average cost
+        console.log(`\n📦 Item ${item.item}: Calculating weighted average cost...`);
         
-        const costResult = await costingService.calculateCost(costingMethod, {
+        // Get current cost from inventory engine
+        const costData = await inventoryTransactionService.getCurrentCost({
           tenantId,
           itemId: item.item,
-          warehouseId: updatedSales.warehouse,
-          qty: item.quantity || 0,
         });
 
-        if (!costResult) {
+        if (!costData || costData.avgCost === 0) {
           throw new Error(
-            `Costing calculation failed for item ${item.item}. Insufficient stock or costing error.`
+            `No cost data available for item ${item.item}. Cannot calculate COGS.`
           );
         }
 
-        console.log(`   ✅ ${costingMethod} Result: TotalCost=${costResult.totalCost}, UnitCost=${costResult.unitCost}`);
+        const unitCost = costData.avgCost;
+        const totalCost = item.quantity * unitCost;
+
+        console.log(`   ✅ WAC Result: TotalCost=${totalCost}, UnitCost=${unitCost}`);
 
         // Update item with calculated costs
-        item.cost = costResult.totalCost;
-        item.unitCost = costResult.unitCost;
-        item.costingMethod = costingMethod; // Track which method was used
-        totalCOGS += costResult.totalCost;
+        item.cost = totalCost;
+        item.unitCost = unitCost;
+        item.costingMethod = 'WAC'; // Weighted Average Cost
+        totalCOGS += totalCost;
+
+        // Calculate rice-specific expenses
+        const itemExpenses = (item.packingCost || 0) + (item.transportCost || 0) + (item.loadingCost || 0);
+        totalExpenses += itemExpenses;
+
+        // Calculate net weight if gross weight provided
+        if (item.grossWeight && item.deductionWeight) {
+          item.netWeight = item.grossWeight - item.deductionWeight;
+        } else {
+          item.netWeight = item.quantity;
+        }
 
         // Create Stock Ledger entry with calculated costs
         await stockLedgerService.createEntry({
@@ -278,11 +294,22 @@ async function postSales(salesId, tenantId, userId) {
           referenceType: 'Sales',
           qtyIn: 0,
           qtyOut: item.quantity || 0,
-          unitCost: costResult.unitCost,
-          totalCost: costResult.totalCost,
+          unitCost: unitCost,
+          totalCost: totalCost,
           batchNo: item.batchNo || null,
           subLot: item.subLot || null,
           transactionDate: updatedSales.date || new Date(),
+        });
+
+        // Also use inventory engine to remove stock
+        await inventoryTransactionService.removeStock({
+          tenantId,
+          itemId: item.item,
+          warehouseId: updatedSales.warehouse,
+          quantity: item.quantity || 0,
+          referenceId: updatedSales._id,
+          referenceType: 'SALE',
+          description: `Sale ${updatedSales.salesNumber}`,
         });
       }
     } catch (err) {
@@ -330,6 +357,8 @@ async function postSales(salesId, tenantId, userId) {
     updatedSales.journalId = journalId;
     updatedSales.cogsJournalId = cogsJournalId;
     updatedSales.totalCOGS = totalCOGS;
+    updatedSales.totalExpenses = totalExpenses;
+    updatedSales.grossProfit = updatedSales.totalAmount - totalCOGS - totalExpenses;
     await updatedSales.save();
 
     await AuditService.logAction({

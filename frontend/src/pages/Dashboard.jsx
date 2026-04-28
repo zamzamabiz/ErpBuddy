@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getSummary } from "../modules/reports/services/reportService";
+import { getDashboardSummary } from "../services/dashboardService";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 function Dashboard() {
@@ -29,16 +29,22 @@ function Dashboard() {
   };
 
   useEffect(() => {
-    async function fetchSummary() {
+    async function fetchDashboardData() {
       setLoading(true);
       setError(null);
       try {
-        const response = await getSummary();
-        console.log('✅ Dashboard summary received:', response);
+        console.log('📊 Dashboard: Starting data fetch...');
+        const response = await getDashboardSummary();
+        console.log('✅ Dashboard data received:', response);
         setSummaryData(response);
       } catch (err) {
         console.error('❌ Dashboard error:', err);
-        const errorMsg = err.response?.data?.message || err.message || "Failed to load financial data";
+        console.error('❌ Dashboard error details:', {
+          message: err.message,
+          response: err.response,
+          stack: err.stack
+        });
+        const errorMsg = err.message || "Failed to load financial data";
         
         // If any auth-related error, force re-login
         if (
@@ -59,16 +65,17 @@ function Dashboard() {
         setLoading(false);
       }
     }
-    fetchSummary();
+    fetchDashboardData();
   }, [navigate]);
 
   // Extract summary data safely
-  const assets = summaryData?.financialPosition?.assets || 0;
+  // Handle both formats: financialPosition/profitAndLoss AND direct metrics
+  const assets = summaryData?.financialPosition?.assets || summaryData?.stockValue || 0;
   const liabilities = summaryData?.financialPosition?.liabilities || 0;
   const equity = summaryData?.financialPosition?.equity || 0;
-  const income = summaryData?.profitLoss?.income || 0;
-  const expenses = summaryData?.profitLoss?.expenses || 0;
-  const netProfit = summaryData?.profitLoss?.netProfit || 0;
+  const income = summaryData?.profitAndLoss?.income || summaryData?.totalSales || 0;
+  const expenses = summaryData?.profitAndLoss?.expenses || summaryData?.cogs || 0;
+  const netProfit = summaryData?.profitAndLoss?.netIncome || summaryData?.grossProfit || 0;
 
   // Prepare chart data
   const chartData = [

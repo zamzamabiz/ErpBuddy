@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const DashboardService = require('./dashboard.service');
+const authMiddleware = require('../../middleware/auth.middleware');
 
 /**
  * Validate date string (YYYY-MM-DD)
@@ -16,14 +17,16 @@ function isValidDate(dateStr) {
  * Get dashboard metrics
  * Query params: asOfDate (optional, YYYY-MM-DD format)
  */
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const { asOfDate } = req.query;
-    const tenantId = req.user?.tenantId;
+    
+    // Get tenantId from authenticated user
+    const tenantId = req.tenantId || req.user?.tenantId;
 
     // Validate tenantId
     if (!tenantId) {
-      return res.status(401).json({ success: false, error: 'Authentication required' });
+      return res.status(401).json({ success: false, error: 'Authentication required - tenantId not found' });
     }
 
     // Validate date

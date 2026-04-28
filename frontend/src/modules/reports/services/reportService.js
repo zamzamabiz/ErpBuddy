@@ -14,14 +14,24 @@ const API_BASE = '/api/reports';
  */
 export const getLedger = async (accountId, filters = {}) => {
   try {
+    const token = localStorage.getItem('token');
     const params = new URLSearchParams();
     
     if (filters.fromDate) params.append('fromDate', filters.fromDate);
     if (filters.toDate) params.append('toDate', filters.toDate);
     if (filters.includeOpening) params.append('includeOpening', filters.includeOpening);
 
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await axios.get(
-      `${API_BASE}/ledger/${accountId}?${params.toString()}`
+      `${API_BASE}/ledger/${accountId}?${params.toString()}`,
+      { headers }
     );
 
     return response.data;
@@ -37,14 +47,24 @@ export const getLedger = async (accountId, filters = {}) => {
  */
 export const getTrialBalance = async (filters = {}) => {
   try {
+    const token = localStorage.getItem('token');
     const params = new URLSearchParams();
     
     if (filters.fromDate) params.append('fromDate', filters.fromDate);
     if (filters.toDate) params.append('toDate', filters.toDate);
     if (filters.byType) params.append('byType', filters.byType);
 
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await axios.get(
-      `${API_BASE}/trial-balance?${params.toString()}`
+      `${API_BASE}/trial-balance?${params.toString()}`,
+      { headers }
     );
 
     return response.data;
@@ -60,13 +80,23 @@ export const getTrialBalance = async (filters = {}) => {
  */
 export const getSummary = async (filters = {}) => {
   try {
+    const token = localStorage.getItem('token');
     const params = new URLSearchParams();
     
     if (filters.fromDate) params.append('fromDate', filters.fromDate);
     if (filters.toDate) params.append('toDate', filters.toDate);
 
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await axios.get(
-      `${API_BASE}/summary?${params.toString()}`
+      `${API_BASE}/summary?${params.toString()}`,
+      { headers }
     );
 
     return response.data;

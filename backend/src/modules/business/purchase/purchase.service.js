@@ -4,6 +4,7 @@ const JournalService = require('../../finance/journal/journal.service');
 const ChartOfAccount = require('../../accounting/coa.model');
 const Item = require('../../item/item.model');
 const StockMovement = require('../../inventory/stockMovement.model');
+const inventoryTransactionService = require('../../engines/inventoryEngine/inventoryTransaction.service');
 
 /**
  * PURCHASE SERVICE WITH ACCOUNTING INTEGRATION
@@ -14,8 +15,12 @@ const StockMovement = require('../../inventory/stockMovement.model');
  * CREATE PURCHASE WITH ATOMIC TRANSACTION
  */
 async function createPurchase(data, req = {}) {
-  const tenantId = req.tenantId || '69dd0cb31c5468a5b63511b7';
-  const companyId = req.companyId || '69dd0cb31c5468a5b63511b7';
+  // CRITICAL: Tenant ID must be provided - no fallback allowed
+  if (!req.tenantId) {
+    throw new Error('Tenant ID missing — unauthorized');
+  }
+  const tenantId = req.tenantId;
+  const companyId = req.companyId || tenantId;
   const userId = req.userId || 'system';
 
   // Validate required fields
@@ -32,6 +37,18 @@ async function createPurchase(data, req = {}) {
     throw new Error(`Total amount mismatch. Calculated: ${calculatedTotal}, Provided: ${data.totalAmount}`);
   }
 
+  // DUPLICATE PROTECTION: Check for idempotency key
+  if (data.idempotencyKey) {
+    const existing = await Purchase.findOne({
+      idempotencyKey: data.idempotencyKey,
+      tenantId
+    });
+
+    if (existing) {
+      return { success: true, data: existing, duplicate: true };
+    }
+  }
+
   // Use mongoose session for atomic transaction
   const session = await mongoose.startSession();
   
@@ -42,14 +59,15 @@ async function createPurchase(data, req = {}) {
         ...data,
         tenantId,
         companyId,
+        idempotencyKey: data.idempotencyKey || null,
         createdAt: new Date()
       };
 
       const purchase = new Purchase(purchaseData);
       const savedPurchase = await purchase.save({ session });
 
-      // 2. Update item stock and cost prices
-      await updateItemStockAndCost(savedPurchase, session);
+      // 2. Update item stock and cost prices using inventory engine
+      await updateItemStockWithEngine(savedPurchase, session);
 
       // 3. Create accounting journal entry
       const journalEntry = await createPurchaseJournalEntry(savedPurchase, tenantId, companyId, userId, session);
@@ -74,61 +92,30 @@ async function createPurchase(data, req = {}) {
 }
 
 /**
- * UPDATE ITEM STOCK AND COST PRICES
+ * UPDATE ITEM STOCK USING INVENTORY ENGINE
+ * Uses inventoryTransactionService for weighted average cost calculation
  */
-async function updateItemStockAndCost(purchase, session) {
+async function updateItemStockWithEngine(purchase, session) {
   for (const item of purchase.items) {
     const itemId = item.itemId;
     const quantity = item.quantity;
     const totalAmount = item.amount;
     const unitCost = totalAmount / quantity;
 
-    // Get current item data
-    const currentItem = await Item.findOne({ _id: itemId, tenantId: purchase.tenantId });
-    if (!currentItem) {
-      throw new Error(`Item ${itemId} not found for tenant ${purchase.tenantId}`);
-    }
-
-    // Calculate new average cost
-    const currentStock = currentItem.currentStock || 0;
-    const currentCost = currentItem.costPrice || 0;
-    
-    let newCostPrice;
-    if (currentStock === 0) {
-      // First purchase - use new cost
-      newCostPrice = unitCost;
-    } else {
-      // Average cost calculation
-      newCostPrice = ((currentStock * currentCost) + totalAmount) / (currentStock + quantity);
-    }
-
-    // Update item
-    await Item.findOneAndUpdate(
-      { _id: itemId, tenantId: purchase.tenantId },
-      {
-        $inc: { currentStock: quantity },
-        $set: { costPrice: newCostPrice, updatedAt: new Date() }
-      },
-      { session }
-    );
-
-    // Create stock movement record
-    const stockMovement = new StockMovement({
+    // Use inventory engine for stock update with weighted average cost
+    const result = await inventoryTransactionService.addStock({
       tenantId: purchase.tenantId,
-      itemId: itemId,
+      itemId,
+      warehouseId: item.godownId || purchase.godownId,
+      quantity,
+      unitCost,
       referenceId: purchase._id,
       referenceType: 'PURCHASE',
-      movementType: 'IN',
-      quantity: quantity,
-      unitCost: unitCost,
-      totalCost: totalAmount,
-      balance: currentStock + quantity,
-      description: `Purchase ${purchase._id}`
+      description: `Purchase ${purchase._id}`,
+      session
     });
 
-    await stockMovement.save({ session });
-
-    console.log(`✅ Stock updated: Item ${itemId} +${quantity}, new cost: ${newCostPrice.toFixed(2)}`);
+    console.log(`✅ Stock updated via inventory engine: Item ${itemId} +${quantity}, new avg cost: ${result.newAvgCost.toFixed(2)}`);
   }
 }
 
@@ -203,8 +190,12 @@ async function createPurchaseJournalEntry(purchase, tenantId, companyId, userId,
  * GET ALL PURCHASES
  */
 async function getAllPurchases(req) {
-  const tenantId = req.tenantId || '69dd0cb31c5468a5b63511b7';
-  const companyId = req.companyId || '69dd0cb31c5468a5b63511b7';
+  // CRITICAL: Tenant ID must be provided - no fallback allowed
+  if (!req.tenantId) {
+    throw new Error('Tenant ID missing — unauthorized');
+  }
+  const tenantId = req.tenantId;
+  const companyId = req.companyId || tenantId;
   
   return await Purchase.find({ 
     tenantId, 
@@ -217,8 +208,12 @@ async function getAllPurchases(req) {
  * GET PURCHASE BY ID
  */
 async function getPurchaseById(id, req) {
-  const tenantId = req.tenantId || '69dd0cb31c5468a5b63511b7';
-  const companyId = req.companyId || '69dd0cb31c5468a5b63511b7';
+  // CRITICAL: Tenant ID must be provided - no fallback allowed
+  if (!req.tenantId) {
+    throw new Error('Tenant ID missing — unauthorized');
+  }
+  const tenantId = req.tenantId;
+  const companyId = req.companyId || tenantId;
   
   return await Purchase.findOne({ 
     _id: id, 
@@ -232,8 +227,12 @@ async function getPurchaseById(id, req) {
  * UPDATE PURCHASE (NOT RECOMMENDED - USE DELETE AND CREATE NEW)
  */
 async function updatePurchase(id, data, req) {
-  const tenantId = req.tenantId || '69dd0cb31c5468a5b63511b7';
-  const companyId = req.companyId || '69dd0cb31c5468a5b63511b7';
+  // CRITICAL: Tenant ID must be provided - no fallback allowed
+  if (!req.tenantId) {
+    throw new Error('Tenant ID missing — unauthorized');
+  }
+  const tenantId = req.tenantId;
+  const companyId = req.companyId || tenantId;
   
   // Note: Updating purchases after journal creation is complex
   // In real systems, you would create a credit note instead
@@ -244,8 +243,12 @@ async function updatePurchase(id, data, req) {
  * DELETE PURCHASE WITH REVERSAL
  */
 async function deletePurchase(id, req) {
-  const tenantId = req.tenantId || '69dd0cb31c5468a5b63511b7';
-  const companyId = req.companyId || '69dd0cb31c5468a5b63511b7';
+  // CRITICAL: Tenant ID must be provided - no fallback allowed
+  if (!req.tenantId) {
+    throw new Error('Tenant ID missing — unauthorized');
+  }
+  const tenantId = req.tenantId;
+  const companyId = req.companyId || tenantId;
   const userId = req.userId || 'system';
 
   const session = await mongoose.startSession();

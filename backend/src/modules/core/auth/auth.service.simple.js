@@ -14,9 +14,13 @@ const JWT_EXPIRE = jwtConfig.expiresIn || '7d';
 async function registerUser(data) {
   const { name, email, password, tenantId, role } = data;
 
-  // Validate input
-  if (!name || !email || !password || !tenantId || !role) {
-    throw new Error('Name, email, password, tenantId, and role are required');
+  // Validate required input
+  if (!name || !email || !password) {
+    throw new Error('Name, email, and password are required');
+  }
+
+  if (!tenantId) {
+    throw new Error('Tenant ID is required for user registration');
   }
 
   // Check if user exists
@@ -31,7 +35,7 @@ async function registerUser(data) {
     email,
     password,
     tenantId,
-    role,
+    role: role || 'staff',
     company: 'Default'  // Default company value
   });
 
@@ -66,13 +70,18 @@ async function loginUser(data) {
     throw new Error('Invalid email or password');
   }
 
+  // Validate user has required fields for JWT
+  if (!user.tenantId) {
+    throw new Error('User account is incomplete: missing tenant ID. Please contact administrator.');
+  }
+
   // Generate JWT token with multi-tenant support and role
   const payload = {
     userId: user._id.toString(),
     email: user.email,
     tenantId: user.tenantId.toString(),
     companyId: user.tenantId.toString(),  // For compatibility
-    userRole: user.userRole  // Add role to JWT
+    userRole: user.userRole || 'admin'  // Default to admin if not set
   };
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRE });
 

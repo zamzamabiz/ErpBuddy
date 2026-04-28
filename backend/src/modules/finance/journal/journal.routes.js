@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../../../middleware/auth.middleware');
-const periodLock = require('../../../middlewares/periodLock.middleware');
+const periodLock = require('../../../middleware/periodLock.middleware');
 const JournalController = require('./journal.controller');
 
 /**

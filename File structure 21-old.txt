@@ -1,0 +1,439 @@
+Folder PATH listing for volume New Volume
+Volume serial number is 664C-A29C
+E:\1. ALL ERP\ERPBUDDY\BACKEND\SRC
+|   app.js
+|   
++---config
+|       app.config.js
+|       db.config.js
+|       jwt.config.js
+|       
++---events
++---jobs
++---loaders
+|       mongodb.loader.js
+|       
++---middleware
+|       auth.middleware.js
+|       error.middleware.js
+|       rbac.middleware.js
+|       
++---modules
+|   +---accounting
+|   |   \---accounts
+|   |           account.controller.js
+|   |           account.model.js
+|   |           account.repository.js
+|   |           account.routes.js
+|   |           account.service.js
+|   |           account.validation.js
+|   |           
+|   +---accounts
+|   |       accounts.routes.js
+|   |       
+|   +---admin
+|   +---business
+|   |   +---finance
+|   |   |       finance.controller.js
+|   |   |       finance.routes.js
+|   |   |       finance.service.js
+|   |   |       finance.validation.js
+|   |   |       
+|   |   +---payments
+|   |   |       payment.controller.js
+|   |   |       payment.model.js
+|   |   |       payment.repository.js
+|   |   |       payment.routes.js
+|   |   |       payment.service.js
+|   |   |       payment.validation.js
+|   |   |       
+|   |   +---purchase
+|   |   |       purchase.controller.js
+|   |   |       purchase.model.js
+|   |   |       purchase.repository.js
+|   |   |       purchase.routes.js
+|   |   |       purchase.service.js
+|   |   |       purchase.validation.js
+|   |   |       
+|   |   \---sales
+|   |           sales.controller.js
+|   |           sales.model.js
+|   |           sales.repository.js
+|   |           sales.routes.js
+|   |           sales.service.js
+|   |           sales.validation.js
+|   |           
+|   +---core
+|   |   +---auth
+|   |   |       auth.controller.js
+|   |   |       auth.model.js
+|   |   |       auth.permissions.js
+|   |   |       auth.repository.js
+|   |   |       auth.routes.js
+|   |   |       auth.service.js
+|   |   |       auth.validation.js
+|   |   |       index.js
+|   |   |       user.model.js
+|   |   |       
+|   |   +---branches
+|   |   |       branch.controller.js
+|   |   |       branch.model.js
+|   |   |       branch.repository.js
+|   |   |       branch.routes.js
+|   |   |       branch.service.js
+|   |   |       branch.validation.js
+|   |   |       
+|   |   +---companies
+|   |   |       company.controller.js
+|   |   |       company.model.js
+|   |   |       company.repository.js
+|   |   |       company.routes.js
+|   |   |       company.service.js
+|   |   |       company.validation.js
+|   |   |       
+|   |   +---company
+|   |   |       company.controller.js
+|   |   |       company.model.js
+|   |   |       company.permissions.js
+|   |   |       company.repository.js
+|   |   |       company.routes.js
+|   |   |       company.service.js
+|   |   |       company.validation.js
+|   |   |       index.js
+|   |   |       
+|   |   +---permissions
+|   |   |       index.js
+|   |   |       permission.controller.js
+|   |   |       permission.model.js
+|   |   |       permission.repository.js
+|   |   |       permission.routes.js
+|   |   |       permission.service.js
+|   |   |       permission.validation.js
+|   |   |       permissions.controller.js
+|   |   |       permissions.model.js
+|   |   |       permissions.permissions.js
+|   |   |       permissions.repository.js
+|   |   |       permissions.routes.js
+|   |   |       permissions.service.js
+|   |   |       permissions.validation.js
+|   |   |       rolePermission.model.js
+|   |   |       
+|   |   +---roles
+|   |   |       index.js
+|   |   |       role.controller.js
+|   |   |       role.model.js
+|   |   |       role.repository.js
+|   |   |       role.routes.js
+|   |   |       role.service.js
+|   |   |       role.validation.js
+|   |   |       roles.controller.js
+|   |   |       roles.model.js
+|   |   |       roles.permissions.js
+|   |   |       roles.repository.js
+|   |   |       roles.routes.js
+|   |   |       roles.service.js
+|   |   |       roles.validation.js
+|   |   |       
+|   |   +---subscriptionPlans
+|   |   |       subscriptionPlan.controller.js
+|   |   |       subscriptionPlan.model.js
+|   |   |       subscriptionPlan.repository.js
+|   |   |       subscriptionPlan.routes.js
+|   |   |       subscriptionPlan.service.js
+|   |   |       subscriptionPlan.validation.js
+|   |   |       
+|   |   +---subscriptions
+|   |   |       subscription.controller.js
+|   |   |       subscription.model.js
+|   |   |       subscription.repository.js
+|   |   |       subscription.routes.js
+|   |   |       subscription.service.js
+|   |   |       subscription.validation.js
+|   |   |       
+|   |   +---tenants
+|   |   |       tenant.controller.js
+|   |   |       tenant.model.js
+|   |   |       tenant.repository.js
+|   |   |       tenant.routes.js
+|   |   |       tenant.service.js
+|   |   |       tenant.validation.js
+|   |   |       
+|   |   \---users
+|   |           index.js
+|   |           user.controller.js
+|   |           user.model.js
+|   |           user.repository.js
+|   |           user.routes.js
+|   |           user.service.js
+|   |           user.validation.js
+|   |           users.controller.js
+|   |           users.model.js
+|   |           users.permissions.js
+|   |           users.repository.js
+|   |           users.routes.js
+|   |           users.service.js
+|   |           users.validation.js
+|   |           
+|   +---dashboard
+|   |       dashboard.controller.js
+|   |       dashboard.repository.js
+|   |       dashboard.routes.js
+|   |       dashboard.service.js
+|   |       
+|   +---engines
+|   |   +---accountingEngine
+|   |   |       journalEntry.controller.js
+|   |   |       journalEntry.model.js
+|   |   |       journalEntry.repository.js
+|   |   |       journalEntry.routes.js
+|   |   |       journalEntry.service.js
+|   |   |       journalEntry.validation.js
+|   |   |       
+|   |   +---documentEngine
+|   |   |       document.controller.js
+|   |   |       document.model.js
+|   |   |       document.repository.js
+|   |   |       document.routes.js
+|   |   |       document.service.js
+|   |   |       document.validation.js
+|   |   |       
+|   |   +---documentNumbering
+|   |   |       documentNumber.controller.js
+|   |   |       documentNumber.routes.js
+|   |   |       documentNumber.service.js
+|   |   |       documentNumber.validation.js
+|   |   |       documentSequence.model.js
+|   |   |       documentSequence.repository.js
+|   |   |       
+|   |   \---inventoryEngine
+|   |           inventoryTransaction.controller.js
+|   |           inventoryTransaction.model.js
+|   |           inventoryTransaction.repository.js
+|   |           inventoryTransaction.routes.js
+|   |           inventoryTransaction.service.js
+|   |           inventoryTransaction.validation.js
+|   |           
+|   +---finance
+|   |   +---journal
+|   |   |       journal.controller.js
+|   |   |       journal.model.js
+|   |   |       journal.repository.js
+|   |   |       journal.routes.js
+|   |   |       journal.service.js
+|   |   |       journal.validation.js
+|   |   |       journalLine.model.js
+|   |   |       
+|   |   +---payments
+|   |   |       payment.controller.js
+|   |   |       payment.model.js
+|   |   |       payment.repository.js
+|   |   |       payment.routes.js
+|   |   |       payment.service.js
+|   |   |       payment.validation.js
+|   |   |       
+|   |   \---reports
+|   |       |   index.js
+|   |       |   
+|   |       +---balance-sheet
+|   |       |       balanceSheet.controller.js
+|   |       |       balanceSheet.repository.js
+|   |       |       balanceSheet.routes.js
+|   |       |       balanceSheet.service.js
+|   |       |       
+|   |       +---cash-flow
+|   |       |       cashFlow.controller.js
+|   |       |       cashFlow.repository.js
+|   |       |       cashFlow.routes.js
+|   |       |       cashFlow.service.js
+|   |       |       
+|   |       +---profit-loss
+|   |       |       profitLoss.controller.js
+|   |       |       profitLoss.repository.js
+|   |       |       profitLoss.routes.js
+|   |       |       profitLoss.service.js
+|   |       |       
+|   |       \---trial-balance
+|   |               trialBalance.controller.js
+|   |               trialBalance.repository.js
+|   |               trialBalance.routes.js
+|   |               trialBalance.service.js
+|   |               
+|   +---hr
+|   |   |   hr.routes.js
+|   |   |   
+|   |   \---payroll
+|   |           payroll.controller.js
+|   |           payroll.model.js
+|   |           payroll.repository.js
+|   |           payroll.routes.js
+|   |           payroll.service.js
+|   |           payroll.validation.js
+|   |           
+|   +---industry
+|   |   +---hr
+|   |   |       attendance.controller.js
+|   |   |       attendance.model.js
+|   |   |       attendance.repository.js
+|   |   |       attendance.routes.js
+|   |   |       attendance.service.js
+|   |   |       attendance.validation.js
+|   |   |       department.controller.js
+|   |   |       department.model.js
+|   |   |       department.repository.js
+|   |   |       department.routes.js
+|   |   |       department.service.js
+|   |   |       department.validation.js
+|   |   |       designation.controller.js
+|   |   |       designation.model.js
+|   |   |       designation.repository.js
+|   |   |       designation.routes.js
+|   |   |       designation.service.js
+|   |   |       designation.validation.js
+|   |   |       employee.controller.js
+|   |   |       employee.model.js
+|   |   |       employee.repository.js
+|   |   |       employee.routes.js
+|   |   |       employee.service.js
+|   |   |       employee.validation.js
+|   |   |       leave.controller.js
+|   |   |       leave.model.js
+|   |   |       leave.repository.js
+|   |   |       leave.routes.js
+|   |   |       leave.service.js
+|   |   |       leave.validation.js
+|   |   |       payroll.controller.js
+|   |   |       payroll.model.js
+|   |   |       payroll.repository.js
+|   |   |       payroll.routes.js
+|   |   |       payroll.service.js
+|   |   |       payroll.validation.js
+|   |   |       salaryStructure.controller.js
+|   |   |       salaryStructure.model.js
+|   |   |       salaryStructure.repository.js
+|   |   |       salaryStructure.routes.js
+|   |   |       salaryStructure.service.js
+|   |   |       salaryStructure.validation.js
+|   |   |       
+|   |   \---manufacturing
+|   |           bom.controller.js
+|   |           bom.model.js
+|   |           bom.repository.js
+|   |           bom.routes.js
+|   |           bom.service.js
+|   |           bom.validation.js
+|   |           productionOrder.controller.js
+|   |           productionOrder.model.js
+|   |           productionOrder.repository.js
+|   |           productionOrder.routes.js
+|   |           productionOrder.service.js
+|   |           productionOrder.validation.js
+|   |           
+|   +---inventory
+|   +---manufacturing
+|   +---masters
+|   |   +---chartOfAccounts
+|   |   |       chartOfAccounts.controller.js
+|   |   |       chartOfAccounts.model.js
+|   |   |       chartOfAccounts.repository.js
+|   |   |       chartOfAccounts.routes.js
+|   |   |       chartOfAccounts.service.js
+|   |   |       chartOfAccounts.validation.js
+|   |   |       
+|   |   +---currency
+|   |   |       currency.controller.js
+|   |   |       currency.model.js
+|   |   |       currency.repository.js
+|   |   |       currency.routes.js
+|   |   |       currency.service.js
+|   |   |       currency.validation.js
+|   |   |       
+|   |   +---customers
+|   |   |       customers.controller.js
+|   |   |       customers.model.js
+|   |   |       customers.permissions.js
+|   |   |       customers.repository.js
+|   |   |       customers.routes.js
+|   |   |       customers.service.js
+|   |   |       customers.validation.js
+|   |   |       index.js
+|   |   |       
+|   |   +---items
+|   |   |       index.js
+|   |   |       items.controller.js
+|   |   |       items.model.js
+|   |   |       items.permissions.js
+|   |   |       items.repository.js
+|   |   |       items.routes.js
+|   |   |       items.service.js
+|   |   |       items.validation.js
+|   |   |       
+|   |   +---suppliers
+|   |   |       index.js
+|   |   |       suppliers.controller.js
+|   |   |       suppliers.model.js
+|   |   |       suppliers.permissions.js
+|   |   |       suppliers.repository.js
+|   |   |       suppliers.routes.js
+|   |   |       suppliers.service.js
+|   |   |       suppliers.validation.js
+|   |   |       
+|   |   +---tax
+|   |   |       tax.controller.js
+|   |   |       tax.model.js
+|   |   |       tax.repository.js
+|   |   |       tax.routes.js
+|   |   |       tax.service.js
+|   |   |       tax.validation.js
+|   |   |       
+|   |   +---unit
+|   |   |       unit.controller.js
+|   |   |       unit.model.js
+|   |   |       unit.repository.js
+|   |   |       unit.routes.js
+|   |   |       unit.service.js
+|   |   |       unit.validation.js
+|   |   |       
+|   |   \---warehouse
+|   |           index.js
+|   |           warehouse.controller.js
+|   |           warehouse.model.js
+|   |           warehouse.permissions.js
+|   |           warehouse.repository.js
+|   |           warehouse.routes.js
+|   |           warehouse.service.js
+|   |           warehouse.validation.js
+|   |           
+|   +---purchase
+|   +---reports
+|   |       reports.controller.js
+|   |       reports.routes.js
+|   |       reports.service.js
+|   |       reports.validation.js
+|   |       
+|   +---sales
+|   \---system
++---routes
+|       index.js
+|       
++---services
+|       auditLog.service.js
+|       documentNumber.service.js
+|       fileUpload.service.js
+|       notification.service.js
+|       permission.service.js
+|       
++---shared
+|       base.model.js
+|       base.repository.js
+|       base.service.js
+|       numberSeries.model.js
+|       numberSeries.repository.js
+|       numberSeries.service.js
+|       
++---utils
+|       apiResponse.js
+|       asyncHandler.js
+|       generateCode.js
+|       pagination.js
+|       
+\---websocket

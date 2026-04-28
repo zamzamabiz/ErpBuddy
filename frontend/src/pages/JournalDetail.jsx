@@ -21,8 +21,8 @@ function JournalDetail() {
           throw new Error("No authentication token found");
         }
 
-        console.log("📖 Fetching from: http://localhost:5000/api/journal/" + id);
-        const response = await fetch(`http://localhost:5000/api/journal/${id}`, {
+        console.log("📖 Fetching from: /api/journal/" + id);
+        const response = await fetch(`/api/journal/${id}`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,

@@ -1,8 +1,11 @@
 const express = require("express");
 const router = express.Router();
 
-// Auth Routes
+// Auth Routes (NO tenant middleware needed)
 const authRoutesSimple = require('../modules/core/auth/auth.routes.simple');
+
+// Middleware
+const tenantMiddleware = require('../middleware/tenant.middleware');
 
 // Module Routes
 const accountRoutes = require("../modules/accounting/accounts/account.routes");
@@ -50,8 +53,15 @@ const deepseekRoutes = require('../modules/ai/deepseek.routes');
 const accountingLedgerRoutes = require('../modules/accounting/ledger.routes');
 const accountingTrialBalanceRoutes = require('../modules/accounting/trialBalance.routes');
 
-// Register auth endpoints
+// ============================================
+// PUBLIC ROUTES (NO tenant middleware required)
+// ============================================
 router.use('/auth', authRoutesSimple);
+
+// ============================================
+// PROTECTED ROUTES (tenant middleware required)
+// ============================================
+router.use(tenantMiddleware);
 
 // Core setup routes
 router.use('/roles', roleRoutes);
@@ -91,10 +101,7 @@ router.use("/audit", auditRoutes);
 router.use("/sales", salesRoutes);
 const salesSimpleRoutes = require('../modules/business/sales/sales.simple.routes');
 router.use('/sales', salesSimpleRoutes);
-
-// Protected route: Apply auth middleware to purchase
-const authDevMiddleware = require('../middleware/auth.dev.middleware');
-router.use("/purchase", authDevMiddleware, purchaseRoutes);
+router.use("/purchase", purchaseRoutes);
 
 // HR routes
 router.use("/hr", hrRoutes);

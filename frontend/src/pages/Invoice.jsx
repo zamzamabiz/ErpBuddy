@@ -24,8 +24,8 @@ function Invoice() {
           throw new Error("No authentication token found");
         }
 
-        console.log("📌 Fetching from: http://localhost:5000/api/sales/" + id);
-        const response = await fetch(`http://localhost:5000/api/sales/${id}`, {
+        console.log("📌 Fetching from: /api/sales/" + id);
+        const response = await fetch(`/api/sales/${id}`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -48,7 +48,7 @@ function Invoice() {
           console.log("📖 Fetching journal:", saleData.journalId);
           try {
             const journalResponse = await fetch(
-              `http://localhost:5000/api/journal/${saleData.journalId}`,
+              `/api/journal/${saleData.journalId}`,
               {
                 method: "GET",
                 headers: {

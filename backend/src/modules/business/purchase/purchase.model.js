@@ -143,5 +143,5 @@ purchaseSchema.statics.findByTenantAndId = function(tenantId, purchaseId) {
   });
 };
 
-module.exports = mongoose.model('Purchase', purchaseSchema);
+module.exports = mongoose.models.Purchase || mongoose.model('Purchase', purchaseSchema);
 

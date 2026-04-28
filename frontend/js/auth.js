@@ -3,8 +3,8 @@
  * Handles user login, logout, session management, and token storage
  */
 
-// Backend API URL
-const API_BASE_URL = 'http://localhost:5000/api';
+// Backend API URL - Use relative path for production
+const API_BASE_URL = '/api';
 
 /**
  * Login user with email and password

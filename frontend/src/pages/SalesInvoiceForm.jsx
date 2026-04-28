@@ -44,7 +44,7 @@ function SalesInvoiceForm() {
       }
 
       // Fetch customers
-      const customersRes = await fetch('http://localhost:5000/api/masters/customers', {
+      const customersRes = await fetch('/api/masters/customers', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (customersRes.ok) {
@@ -53,7 +53,7 @@ function SalesInvoiceForm() {
       }
 
       // Fetch items
-      const itemsRes = await fetch('http://localhost:5000/api/masters/items', {
+      const itemsRes = await fetch('/api/masters/items', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (itemsRes.ok) {
@@ -62,7 +62,7 @@ function SalesInvoiceForm() {
       }
 
       // Fetch warehouses
-      const warehousesRes = await fetch('http://localhost:5000/api/masters/warehouses', {
+      const warehousesRes = await fetch('/api/masters/warehouses', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (warehousesRes.ok) {
@@ -71,7 +71,7 @@ function SalesInvoiceForm() {
       }
 
       // Fetch accounts
-      const accountsRes = await fetch('http://localhost:5000/api/accounts', {
+      const accountsRes = await fetch('/api/accounts', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (accountsRes.ok) {
@@ -158,7 +158,7 @@ function SalesInvoiceForm() {
 
       console.log('📤 Submitting sale:', saleData);
 
-      const response = await fetch('http://localhost:5000/api/sales', {
+      const response = await fetch('/api/sales', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

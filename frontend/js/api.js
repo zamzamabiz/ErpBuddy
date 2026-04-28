@@ -3,7 +3,7 @@
  * Handles authentication, error handling, and common fetch operations
  */
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = '/api';
 
 // Get authentication token - check both 'token' and 'auth_token' for compatibility
 function getToken() {

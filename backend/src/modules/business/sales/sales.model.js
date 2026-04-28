@@ -9,8 +9,17 @@ const salesItemSchema = new Schema({
   bags: { type: Number, default: 0 },
   weightPerBag: { type: Number, default: 0 },
   // 🔴 COGS Fields (populated during posting)
-  cost: { type: Number, default: 0, description: 'Total COGS for this item (FIFO calculated)' },
-  unitCost: { type: Number, default: 0, description: 'Unit cost using FIFO method' }
+  cost: { type: Number, default: 0, description: 'Total COGS for this item' },
+  unitCost: { type: Number, default: 0, description: 'Unit cost using weighted average cost' },
+  // 🟢 Rice-specific fields
+  grossWeight: { type: Number, default: 0, description: 'Gross weight before deductions' },
+  moisturePercent: { type: Number, default: 0, description: 'Moisture content percentage' },
+  brokenPercent: { type: Number, default: 0, description: 'Broken rice percentage' },
+  deductionWeight: { type: Number, default: 0, description: 'Weight deduction for quality' },
+  netWeight: { type: Number, default: 0, description: 'Net weight after deductions' },
+  packingCost: { type: Number, default: 0, description: 'Packing expenses' },
+  transportCost: { type: Number, default: 0, description: 'Transport expenses' },
+  loadingCost: { type: Number, default: 0, description: 'Loading/unloading expenses' }
 }, { _id: false });
 
 const salesSchema = new Schema({
@@ -60,7 +69,18 @@ const salesSchema = new Schema({
   totalCOGS: {
     type: Number,
     default: 0,
-    description: 'Total Cost of Goods Sold (FIFO calculated)'
+    description: 'Total Cost of Goods Sold (weighted average cost)'
+  },
+  // 🟢 Rice-specific expense fields
+  totalExpenses: {
+    type: Number,
+    default: 0,
+    description: 'Total expenses (packing + transport + loading)'
+  },
+  grossProfit: {
+    type: Number,
+    default: 0,
+    description: 'Gross profit (sales - COGS - expenses)'
   },
   cogsAccountId: {
     type: Schema.Types.ObjectId,
@@ -80,4 +100,4 @@ const salesSchema = new Schema({
 
 salesSchema.index({ company: 1, salesNumber: 1 }, { unique: true, partialFilterExpression: { deletedAt: null } });
 
-module.exports = mongoose.model('Sales', salesSchema);
+module.exports = mongoose.models.Sales || mongoose.model('Sales', salesSchema);

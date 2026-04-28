@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const controller = require('./sales.controller');
 const auth = require('../../../middleware/auth.middleware');
-const periodLock = require('../../../middlewares/periodLock.middleware');
+const periodLock = require('../../../middleware/periodLock.middleware');
 
 router.post('/', auth, periodLock, controller.create);
 router.get('/', auth, controller.findAll);

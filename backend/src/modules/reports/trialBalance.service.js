@@ -68,6 +68,11 @@ async function getTrialBalance(tenantId, fromDate = null, toDate = null) {
 
     for (const line of journalLines) {
       const accountId = line.accountId?._id || line.accountId;
+      // Skip lines without a valid account reference
+      if (!accountId) {
+        console.warn(`  ⚠️ Skipping journal line ${line._id} - no accountId`);
+        continue;
+      }
       const key = accountId.toString();
 
       if (!accountMap.has(key)) {

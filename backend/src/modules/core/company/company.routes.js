@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const controller = require('./company.controller');
 const authMiddleware = require('@middleware/auth.middleware');
+const companyMiddleware = require('@middleware/company.middleware');
+
+// Apply company middleware to all routes
+router.use(companyMiddleware);
 
 router.post('/', authMiddleware, controller.create);
 router.get('/', authMiddleware, controller.list);
